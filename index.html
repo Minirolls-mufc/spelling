@@ -3,22 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<!-- PWA for iPad -->
+<!-- PWA Settings -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Romeo Spelling">
-<link rel="apple-touch-icon" href="https://img.icons8.com/color/180/lego-head.png"> 
+<link rel="apple-touch-icon" href="https://img.icons8.com/color/180/lego-head.png">
+<!-- Google Fonts for Art Text -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Rounded+Mplus+1c:wght@400;800&display=swap" rel="stylesheet">
+
 <title>Romeo's Spelling</title>
 <style>
   :root {
     --bg: #f2f6fa; --card: #ffffff; --primary: #007AFF; 
-    --lego-yellow: #FFCF00; --lego-red: #D12E2E; --text: #1d1d1f;
+    --lego-yellow: #FFCF00; --lego-red: #ff3b30; --text: #1d1d1f;
     --success: #34C759;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body {
     margin: 0; padding: 0; 
-    font-family: -apple-system, BlinkMacSystemFont, "Rounded Mplus 1c", "Segoe UI", Roboto, Arial, sans-serif;
+    font-family: "Rounded Mplus 1c", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     background: var(--bg); color: var(--text);
     height: 100vh; display: flex; flex-direction: column;
     overflow: hidden; 
@@ -26,7 +31,7 @@
 
   /* --- Layout --- */
   header {
-    background: rgba(255,255,255,0.9);
+    background: rgba(255,255,255,0.92);
     padding: 15px 20px; padding-top: max(15px, env(safe-area-inset-top));
     display: flex; align-items: center; justify-content: space-between;
     position: sticky; top: 0; z-index: 10; backdrop-filter: blur(10px);
@@ -37,9 +42,9 @@
     width: 44px; height: 44px; background: var(--lego-yellow);
     border-radius: 12px; display: flex; align-items: center; justify-content: center;
     font-weight: 900; font-size: 24px; color: #333;
-    box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.1); font-family: 'Fredoka One', cursive;
   }
-  h1 { margin: 0; font-size: 19px; color: #000; letter-spacing: -0.5px; }
+  h1 { margin: 0; font-size: 20px; color: #000; letter-spacing: -0.5px; font-weight: 800; }
   .subtitle { font-size: 12px; color: #888; font-weight: 500; }
 
   /* --- Main Container --- */
@@ -48,11 +53,13 @@
     padding-bottom: max(30px, env(safe-area-inset-bottom));
   }
 
+  /* --- Artistic Text --- */
+  .art-font { font-family: 'Fredoka One', cursive; letter-spacing: 1px; }
+  
   /* --- Components --- */
   .card {
     background: var(--card); border-radius: 20px; padding: 24px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.04); margin-bottom: 20px;
-    transition: transform 0.1s;
   }
   
   /* Buttons */
@@ -64,6 +71,7 @@
     margin-bottom: 14px; transition: transform 0.1s;
     text-align: center;
     box-shadow: 0 4px 0 rgba(0,0,0,0.05);
+    font-family: "Rounded Mplus 1c", sans-serif;
   }
   .btn:active { transform: scale(0.98) translateY(2px); box-shadow: none; }
   
@@ -72,7 +80,6 @@
   .btn-green { background: var(--success); color: #fff; box-shadow: 0 4px 0 #248a3d; }
   .btn-outline { background: #fff; color: var(--primary); border: 2px solid #eef2f6; box-shadow: none; }
   
-  /* Utilities */
   .btn-row { display: flex; gap: 12px; margin-top: 10px; }
   .btn-small {
     flex: 1; padding: 12px; font-size: 14px; border-radius: 12px;
@@ -106,38 +113,35 @@
 
   /* --- Achievement Page --- */
   .rocket-stage {
-    background: #111e33; color: #fff; border-radius: 20px; padding: 30px 20px;
+    background: linear-gradient(135deg, #0b1e3b, #1a3a6c); color: #fff; border-radius: 20px; padding: 30px 20px;
     text-align: center; margin-bottom: 20px; position: relative; overflow: hidden;
   }
-  .rocket-stage::before {
-    content:''; position: absolute; top:-50%; left:-50%; width:200%; height:200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0) 60%);
-    animation: rotate 20s linear infinite;
-  }
-  @keyframes rotate { from {transform: rotate(0deg);} to {transform: rotate(360deg);} }
-  
-  .big-score { font-size: 48px; font-weight: 900; margin: 10px 0; text-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+  .big-score { font-size: 56px; font-weight: 900; margin: 10px 0; text-shadow: 0 4px 10px rgba(0,0,0,0.3); font-family: 'Fredoka One', cursive; }
   .icons-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 15px; font-size: 24px; }
   
-  .history-list { margin-top: 20px; }
   .history-item {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 16px; background: #fff; border-radius: 12px; margin-bottom: 10px;
-    border-left: 5px solid var(--lego-yellow);
+    background: #fff; border-radius: 14px; margin-bottom: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02); overflow: hidden;
   }
-  .history-date { font-weight: 700; color: #333; }
+  .history-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px; cursor: pointer;
+  }
+  .history-date { font-weight: 800; color: #333; }
   .history-count { color: #666; font-size: 14px; display: flex; align-items: center; gap: 6px; }
-
-  /* --- List Styles --- */
-  .set-item {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 20px; background: #fff; border-radius: 16px; margin-bottom: 12px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.03);
+  .history-details {
+    padding: 0 16px 16px 16px; display: none; border-top: 1px solid #f0f0f0;
   }
-  .set-item:active { background: #f9f9f9; }
-  .set-info strong { display: block; font-size: 17px; margin-bottom: 6px; }
-  .set-info span { font-size: 13px; color: #888; }
+  .history-details.show { display: block; }
+  .detail-tag {
+    display: inline-block; background: #e8f5e9; color: #2e7d32; 
+    padding: 4px 8px; border-radius: 6px; font-size: 13px; margin: 8px 4px 0 0; font-weight: bold;
+  }
   
+  /* Word Wall */
+  .word-wall { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .wall-item { background: #fff; border: 1px solid #eee; padding: 6px 10px; border-radius: 8px; font-size: 14px; font-weight: bold; color: #444; }
+
   /* --- Hidden Inputs --- */
   #hiddenInput { position: fixed; top: -100px; left: 0; opacity: 0; font-size: 16px; }
   #fileInput { display: none; }
@@ -175,21 +179,21 @@
 
 <!-- iOS Audio Unlock Overlay -->
 <div id="startOverlay">
-  <div class="avatar" style="width:90px;height:90px;font-size:45px;margin-bottom:20px;box-shadow:0 10px 20px rgba(0,0,0,0.1)">R</div>
-  <h2 style="margin-bottom:5px">准备好了吗？</h2>
-  <p style="color:#888;margin-bottom:30px">点击开始以启用声音</p>
-  <button class="btn btn-primary" style="width:200px" onclick="unlockAudio()">🚀 开始练习</button>
+  <div class="avatar" style="width:100px;height:100px;font-size:50px;margin-bottom:24px;box-shadow:0 12px 24px rgba(0,0,0,0.15)">R</div>
+  <h2 class="art-font" style="margin-bottom:8px;font-size:28px">Ready?</h2>
+  <p style="color:#888;margin-bottom:32px">点击开始以启用声音</p>
+  <button class="btn btn-primary" style="width:220px" onclick="unlockAudio()">🚀 LET'S GO</button>
 </div>
 
 <script>
 // --- 1. Global State & DB ---
 let db;
 let currentSetDate = null;
-let practiceList = [];
+let practiceList = []; // Full list of current set
 let currentIndex = 0;
-let stage = 1; 
-let wrongList = [];
-let sessionCorrectCount = 0; // Track correct answers in current session
+let stage = 1; // 1:认读(First View), 2:听写(Dictation), 3:订正(Correction)
+let wrongList = []; // Words wrong in Stage 2
+let sessionMasteredSet = new Set(); // Words correctly spelled in Stage 2 or 3
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 function playSuccessTone() {
@@ -207,8 +211,8 @@ function playSuccessTone() {
   osc.stop(audioCtx.currentTime + 0.5);
 }
 
-// --- 2. Database Init (V3 with logs) ---
-const DB_REQ = indexedDB.open('romeo_spelling_v3', 1);
+// --- 2. Database Init (V4) ---
+const DB_REQ = indexedDB.open('romeo_spelling_v4', 1);
 
 DB_REQ.onupgradeneeded = (e) => {
   db = e.target.result;
@@ -236,8 +240,8 @@ function renderHome() {
   headerBtn.innerHTML = '';
   app.innerHTML = `
     <div style="margin-top:20px;text-align:center;margin-bottom:30px">
-        <div style="font-size:18px;color:#555;margin-bottom:4px">Hi, Romeo! 👋</div>
-        <div style="font-size:24px;font-weight:800;color:#111">今天想做点什么？</div>
+        <div class="art-font" style="font-size:48px;color:#333;text-shadow:2px 2px 0px #eee;margin-bottom:10px">Hi, Romeo!</div>
+        <div style="font-size:16px;color:#666;font-weight:600">今天想做点什么？</div>
     </div>
 
     <button class="btn btn-primary" onclick="renderSetSelection()">
@@ -253,7 +257,7 @@ function renderHome() {
     </button>
 
     <div class="card" style="margin-top:30px;background:#fff">
-      <h4 style="margin:0 0 10px 0;color:#888">数据备份</h4>
+      <h4 style="margin:0 0 10px 0;color:#888;font-size:12px">DATA BACKUP</h4>
       <div class="btn-row">
          <button class="btn-small" onclick="exportAllData()">📤 导出备份</button>
          <button class="btn-small" onclick="document.getElementById('fileInput').click()">📥 恢复数据</button>
@@ -262,7 +266,7 @@ function renderHome() {
   `;
 }
 
-// --- PAGE: SET SELECTION (New) ---
+// --- PAGE: SET SELECTION ---
 function renderSetSelection() {
   headerBtn.innerHTML = `<button class="btn-small" onclick="renderHome()">🏠 首页</button>`;
   
@@ -291,10 +295,10 @@ function renderSetSelection() {
       html += `<div style="text-align:center;padding:40px;color:#999">暂无练习，快去录入新词吧！</div>`;
     } else {
       html += sets.map(s => `
-        <div class="set-item" onclick="startPractice('${s.date}')">
+        <div class="set-item" style="display:flex;justify-content:space-between;align-items:center;padding:16px;background:#fff;border-radius:12px;margin-bottom:10px;box-shadow:0 2px 5px rgba(0,0,0,0.02)" onclick="startPractice('${s.date}')">
           <div class="set-info">
-            <strong>📅 ${s.date}</strong>
-            <span>${s.words.slice(0, 5).join(', ')}${s.words.length>5?'...':''}</span>
+            <strong style="font-size:17px;color:#333">📅 ${s.date}</strong>
+            <span style="font-size:13px;color:#888">${s.words.slice(0, 5).join(', ')}${s.words.length>5?'...':''}</span>
           </div>
           <div style="font-weight:bold;color:var(--primary);background:#eef6ff;padding:6px 12px;border-radius:10px">${s.words.length}词 ›</div>
         </div>
@@ -304,23 +308,29 @@ function renderSetSelection() {
   });
 }
 
-// --- PAGE: RECORDS / ACHIEVEMENTS (New) ---
+// --- PAGE: RECORDS / ACHIEVEMENTS ---
 function renderRecords() {
   headerBtn.innerHTML = `<button class="btn-small" onclick="renderHome()">🏠 首页</button>`;
   
   const tx = db.transaction('practiceLogs', 'readonly');
   getAll(tx.objectStore('practiceLogs')).then(logs => {
-    // Sort logs descending
     logs.sort((a,b) => b.timestamp - a.timestamp);
     
-    // Calculate Stats
+    // Stats calculation
     let totalStars = 0;
-    logs.forEach(l => totalStars += l.count);
+    let allMasteredWords = new Set();
+
+    logs.forEach(l => {
+        totalStars += l.count;
+        if(l.words && Array.isArray(l.words)) {
+            l.words.forEach(w => allMasteredWords.add(w.toLowerCase()));
+        }
+    });
     
     const rockets = Math.floor(totalStars / 10);
     const currentStars = totalStars % 10;
     
-    // Generate Icons HTML
+    // Icons
     let rocketsHtml = '';
     for(let i=0; i<rockets; i++) rocketsHtml += '🚀 ';
     if(rockets === 0) rocketsHtml = '<span style="font-size:14px;opacity:0.6;font-weight:normal">加油练习赚取火箭！</span>';
@@ -329,25 +339,40 @@ function renderRecords() {
     for(let i=0; i<currentStars; i++) starsHtml += '⭐ ';
     for(let i=currentStars; i<10; i++) starsHtml += '<span style="opacity:0.2">⭐</span> ';
 
+    // History List
     let historyHtml = logs.length === 0 ? '<div style="text-align:center;padding:20px;color:#999">暂无记录</div>' : '';
     
-    logs.forEach(log => {
+    logs.forEach((log, index) => {
+        const wordsArr = log.words || [];
+        const wordsHtml = wordsArr.map(w => `<span class="detail-tag">${w}</span>`).join('');
+        
         historyHtml += `
             <div class="history-item">
-                <div class="history-date">${log.date}</div>
-                <div class="history-count">
-                    <span>完成 ${log.count} 个单词</span>
-                    <span style="color:#fbc02d">⭐ +${log.count}</span>
+                <div class="history-header" onclick="toggleHistory(${index})">
+                    <div>
+                        <div class="history-date">${log.date}</div>
+                        <div class="history-count">
+                           <span>完成 ${log.count} 个单词</span>
+                           <span style="font-size:10px;color:#999">▼</span>
+                        </div>
+                    </div>
+                    <div style="font-weight:bold;color:#fbc02d">⭐ +${log.count}</div>
+                </div>
+                <div class="history-details" id="hist-detail-${index}">
+                    ${wordsHtml || '<span style="font-size:12px;color:#ccc">无详细记录</span>'}
                 </div>
             </div>
         `;
     });
+    
+    // Word Wall HTML
+    const wallHtml = Array.from(allMasteredWords).sort().map(w => `<div class="wall-item">${w}</div>`).join('');
 
     app.innerHTML = `
       <div class="rocket-stage">
         <div style="position:relative;z-index:2">
             <div style="font-size:14px;opacity:0.8;text-transform:uppercase;letter-spacing:1px">Total Score</div>
-            <div class="big-score">${totalStars} <span style="font-size:20px">PTS</span></div>
+            <div class="big-score">${totalStars}</div>
             <div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:15px;margin-top:10px">
                 <div style="font-size:12px;margin-bottom:5px;opacity:0.7">火箭收藏馆 (${rockets})</div>
                 <div class="icons-grid" style="font-size:20px">${rocketsHtml}</div>
@@ -359,12 +384,25 @@ function renderRecords() {
         </div>
       </div>
       
-      <h3 style="margin-left:5px">练习足迹</h3>
+      <div class="card">
+        <h3 style="margin:0 0 10px 0">单词墙 (${allMasteredWords.size})</h3>
+        <div class="word-wall">${wallHtml || '<span style="color:#999;font-size:13px">还没有掌握单词哦</span>'}</div>
+      </div>
+
+      <h3 style="margin-left:5px;margin-top:20px">练习足迹</h3>
       <div class="history-list">
         ${historyHtml}
       </div>
     `;
   });
+}
+
+function toggleHistory(idx) {
+    const el = document.getElementById(`hist-detail-${idx}`);
+    if(el) {
+        if(el.classList.contains('show')) el.classList.remove('show');
+        else el.classList.add('show');
+    }
 }
 
 // --- PAGE: INPUT ---
@@ -388,7 +426,7 @@ function renderInput() {
   `;
 }
 
-// --- LOGIC: SAVE & IMPORT/EXPORT ---
+// --- LOGIC: SAVE/IMPORT/EXPORT ---
 function saveSet() {
   const date = document.getElementById('newDate').value;
   const text = document.getElementById('newWords').value;
@@ -446,7 +484,7 @@ function importData(inputElement) {
   reader.readAsText(file);
 }
 
-// --- LOGIC: PRACTICE ---
+// --- LOGIC: PRACTICE CORE ---
 function startPractice(date) {
   const tx = db.transaction('wordSets', 'readonly');
   tx.objectStore('wordSets').get(date).onsuccess = (e) => {
@@ -455,7 +493,7 @@ function startPractice(date) {
     currentSetDate = date;
     practiceList = data.words;
     currentIndex = 0;
-    stage = 1; wrongList = []; sessionCorrectCount = 0;
+    stage = 1; wrongList = []; sessionMasteredSet = new Set();
     renderPracticeUI();
   };
 }
@@ -467,14 +505,14 @@ function renderWrongPractice() {
     currentSetDate = 'wrong_bank';
     practiceList = list.map(i => i.word);
     currentIndex = 0;
-    stage = 2; wrongList = []; sessionCorrectCount = 0;
+    stage = 2; wrongList = []; sessionMasteredSet = new Set();
     renderPracticeUI();
   });
 }
 
 function renderPracticeUI() {
   headerBtn.innerHTML = `<button class="btn-small" onclick="if(confirm('退出练习？')) renderHome()">🏃 退出</button>`;
-  let title = stage === 1 ? "第一轮: 认读" : (stage === 2 ? "第二轮: 听写" : "错题重练");
+  let title = stage === 1 ? "第一轮: 认读记忆" : (stage === 2 ? "第二轮: 听写考核" : "错题重练");
   if(currentSetDate === 'wrong_bank') title = "错题突击";
   
   app.innerHTML = `
@@ -510,7 +548,7 @@ function loadWord() {
     <div style="text-align:center;height:30px;margin-bottom:10px;font-weight:bold;font-size:18px" id="feedback"></div>
 
     <button class="btn btn-primary" id="confirmBtn" onclick="checkWord()">✨ 确认 (Enter)</button>
-    ${stage === 1 ? `<button class="btn btn-outline" style="margin-top:0;border:none;color:#999" onclick="skipWord()">跳过 ›</button>` : ''}
+    <button class="btn btn-outline" id="skipBtn" style="margin-top:0;border:none;color:#999" onclick="skipWord()">跳过 ›</button>
   `;
   setupInput(cleanWord);
   setTimeout(() => speak(cleanWord), 400);
@@ -519,6 +557,7 @@ function loadWord() {
 // --- LOGIC: INPUT & CHECK ---
 let targetWord = "";
 let currentInput = "";
+
 function setupInput(word) {
   targetWord = word; currentInput = "";
   const blanks = document.getElementById('blanksArea'); blanks.innerHTML = '';
@@ -553,59 +592,92 @@ function checkWord() {
   const cleanInput = currentInput.trim().toLowerCase();
   const cleanTarget = targetWord.trim().toLowerCase();
   
-  if(!cleanInput) return; // Prevent empty submit
+  if(!cleanInput) return; // Empty submission
   
+  // Logic Branch
   if(cleanInput === cleanTarget) {
+    // === CORRECT ===
     fb.innerHTML = `<span style="color:var(--success)">太棒了！🎉</span>`;
     document.querySelectorAll('.blank-char').forEach(c => c.classList.add('correct'));
     playSuccessTone();
-    
-    if(currentSetDate === 'wrong_bank') removeFromWrongBank(targetWord);
-    
-    // Only count correct in dictation or final retry mode
-    if(stage >= 1) { sessionCorrectCount++; }
+
+    // Stats Logic: Only count in Stage 2 (Dictation) or Stage 3 (Correction)
+    if(stage >= 2) { 
+        sessionMasteredSet.add(targetWord); 
+        if(currentSetDate === 'wrong_bank') removeFromWrongBank(targetWord);
+    }
 
     setTimeout(() => { currentIndex++; loadWord(); }, 800);
+
   } else {
-    fb.innerHTML = `<span style="color:var(--lego-red)">正确拼写: ${targetWord}</span>`;
+    // === WRONG ===
+    fb.innerHTML = `<span style="color:var(--lego-red)">正确: ${targetWord}</span>`;
     document.querySelectorAll('.blank-char').forEach(c => c.classList.add('wrong'));
-    if(stage !== 3) { 
-      if(!wrongList.includes(targetWord)) wrongList.push(targetWord); 
-      addToWrongBank(targetWord); 
-    }
     const btn = document.getElementById('confirmBtn');
-    btn.innerText = "记住了，继续 ›";
-    btn.style.background = "#666";
-    btn.onclick = () => { currentIndex++; loadWord(); };
+
+    if(stage === 1) {
+        // Stage 1 Error: Clear and Retry
+        btn.innerText = "记住了 (清空重试) ↺";
+        btn.className = "btn btn-yellow";
+        btn.onclick = () => {
+            // Reset UI
+            currentInput = "";
+            document.getElementById('hiddenInput').value = "";
+            updateBlanksUI();
+            document.querySelectorAll('.blank-char').forEach(c => c.classList.remove('wrong'));
+            fb.innerHTML = "";
+            btn.innerText = "✨ 确认 (Enter)";
+            btn.className = "btn btn-primary";
+            btn.onclick = checkWord;
+            document.getElementById('hiddenInput').focus();
+        };
+        // NOTE: "Skip" button remains available in DOM
+    } else {
+        // Stage 2/3 Error: Add to Wrong List
+        if(stage === 2) { 
+            if(!wrongList.includes(targetWord)) wrongList.push(targetWord); 
+            addToWrongBank(targetWord); 
+        }
+        btn.innerText = "记住了，继续 ›";
+        btn.className = "btn btn-outline";
+        btn.onclick = () => { currentIndex++; loadWord(); };
+    }
   }
 }
 
-function skipWord() { currentIndex++; loadWord(); }
+function skipWord() {
+  // Stage 1 Skip: Just move on, doesn't count as wrong.
+  currentIndex++; 
+  loadWord(); 
+}
 
 function handleRoundComplete() {
   if(stage === 1) { 
-    alert("第一轮认读完成！\n接下来进入听写挑战 💪"); 
+    alert("第一轮记忆完成！\n请准备好，接下来开始听写挑战 💪"); 
     stage = 2; currentIndex = 0; renderPracticeUI(); 
   } else if (stage === 2) {
     if(wrongList.length > 0) { 
-      alert(`完成！有 ${wrongList.length} 个单词需要加强复习。`); 
+      alert(`听写完成！有 ${wrongList.length} 个单词需要订正。`); 
       practiceList = [...wrongList]; wrongList = []; stage = 3; currentIndex = 0; renderPracticeUI(); 
     } else {
       finishAll();
     }
   } else {
+    // Stage 3 complete
     finishAll();
   }
 }
 
 function finishAll() {
-  // Save Log
-  if(sessionCorrectCount > 0) {
+  const masteredCount = sessionMasteredSet.size;
+  
+  if(masteredCount > 0) {
     const tx = db.transaction('practiceLogs', 'readwrite');
     tx.objectStore('practiceLogs').add({
         date: new Date().toISOString().slice(0,10),
         timestamp: Date.now(),
-        count: sessionCorrectCount,
+        count: masteredCount,
+        words: Array.from(sessionMasteredSet), // Store specific words
         source: currentSetDate
     });
   }
@@ -613,11 +685,11 @@ function finishAll() {
   app.innerHTML = `
     <div class="card" style="text-align:center;padding:50px 20px;margin-top:40px">
       <div style="font-size:70px;margin-bottom:10px">🚀</div>
-      <h2 style="font-size:28px;margin-bottom:10px;color:#333">练习完成！</h2>
-      <p style="color:#666;font-size:18px">本次获得星星: <b style="color:#fbc02d">${sessionCorrectCount} ⭐</b></p>
+      <h2 style="font-size:28px;margin-bottom:10px;color:#333;font-weight:800">练习完成！</h2>
+      <p style="color:#666;font-size:18px">本次掌握: <b style="color:#fbc02d">${masteredCount} ⭐</b></p>
       <div style="height:20px"></div>
       <button class="btn btn-primary" onclick="renderHome()">返回首页</button>
-      <button class="btn btn-yellow" onclick="renderRecords()">查看我的火箭</button>
+      <button class="btn btn-yellow" onclick="renderRecords()">查看成就</button>
     </div>
   `;
 }
