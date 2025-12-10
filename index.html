@@ -20,7 +20,7 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background: var(--bg); color: var(--text);
     height: 100vh; display: flex; flex-direction: column;
-    overflow: hidden; /* Prevent body scroll, handle in app */
+    overflow: hidden; 
   }
 
   /* --- Layout --- */
@@ -65,6 +65,14 @@
   .btn-yellow { background: var(--lego-yellow); color: #000; }
   .btn-outline { background: #f2f2f7; color: var(--primary); }
   .btn-red { background: #ffebeb; color: var(--lego-red); }
+  
+  .btn-small-row {
+    display: flex; gap: 10px; margin-top: 15px;
+  }
+  .btn-small {
+    flex: 1; padding: 10px; font-size: 14px; border-radius: 10px;
+    background: #eef1f5; color: #555; border: none; cursor: pointer;
+  }
 
   /* --- Practice Mode UI --- */
   .word-display {
@@ -105,11 +113,9 @@
   .set-info strong { display: block; font-size: 16px; margin-bottom: 4px; }
   .set-info span { font-size: 13px; color: #777; }
   
-  /* --- Hidden Input for Keyboard --- */
-  #hiddenInput {
-    position: fixed; top: -100px; left: 0; opacity: 0;
-    font-size: 16px; /* prevent zoom */
-  }
+  /* --- Hidden Inputs --- */
+  #hiddenInput { position: fixed; top: -100px; left: 0; opacity: 0; font-size: 16px; }
+  #fileInput { display: none; }
 
   /* --- Overlay for iOS Audio Unlock --- */
   #startOverlay {
@@ -122,8 +128,9 @@
 </head>
 <body>
 
-<!-- Hidden Input for Virtual Keyboard -->
+<!-- Inputs -->
 <input type="text" id="hiddenInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+<input type="file" id="fileInput" accept=".json" onchange="importData(this)">
 
 <!-- Header -->
 <header>
@@ -149,26 +156,14 @@
 </div>
 
 <script>
-/**
- * 核心逻辑:
- * 1. IndexedDB 存储单词集和错题。
- * 2. 隐藏 Input 代理键盘事件，适配 iPad。
- * 3. iOS 语音合成兼容处理。
- */
-
 // --- 1. Global State & DB ---
 let db;
 let currentSetDate = null;
 let practiceList = [];
 let currentIndex = 0;
-let stage = 1; // 1: Visible, 2: Dictation, 3: Retry
+let stage = 1; 
 let wrongList = [];
 let voices = [];
-
-// Base64 Simple Chime Sound (Success)
-const chimeSound = new Audio("data:audio/mp3;base64,//uQRAAA8AAANIAAAAQAAAaQAAAAgAAA0gAAABAAABpAAAACD/4QsAASUAAHjaY2AYRYO7/38w/38IwUEA/f/D/T8U/wfjPwZGAQDG/w/2/w/F/8H4j4FRQLD7/wcA9f4P1g=="); 
-// Note: The base64 above is a placeholder dummy. For real use, I'll use a functional beep.
-// Let's use the Web Audio API for a simple generated beep to be 100% offline safe and small.
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 function playSuccessTone() {
@@ -188,18 +183,12 @@ function playSuccessTone() {
 
 // --- 2. Database Init ---
 const DB_REQ = indexedDB.open('romeo_spelling_v2', 1);
-
 DB_REQ.onupgradeneeded = (e) => {
   db = e.target.result;
   if (!db.objectStoreNames.contains('wordSets')) db.createObjectStore('wordSets', { keyPath: 'date' });
   if (!db.objectStoreNames.contains('wrongBank')) db.createObjectStore('wrongBank', { keyPath: 'word' });
 };
-
-DB_REQ.onsuccess = (e) => {
-  db = e.target.result;
-  console.log("DB Ready");
-};
-
+DB_REQ.onsuccess = (e) => { db = e.target.result; };
 DB_REQ.onerror = (e) => console.error("DB Error", e);
 
 // --- 3. Navigation & Views ---
@@ -207,30 +196,22 @@ const app = document.getElementById('app');
 const headerBtn = document.getElementById('headerBtn');
 
 function unlockAudio() {
-  // Unlock iOS AudioContext
   if (audioCtx.state === 'suspended') audioCtx.resume();
-  // Trigger speech once to warm up
   const u = new SpeechSynthesisUtterance('');
   speechSynthesis.speak(u);
-  
   document.getElementById('startOverlay').style.display = 'none';
   renderHome();
 }
 
 function renderHome() {
-  // Load stats
   const tx = db.transaction(['wordSets', 'wrongBank'], 'readonly');
-  
   Promise.all([
     getAll(tx.objectStore('wordSets')),
     getAll(tx.objectStore('wrongBank'))
   ]).then(([sets, wrongs]) => {
-    // Sort sets by date desc
     sets.sort((a,b) => b.date.localeCompare(a.date));
-    
     let totalWords = 0;
     sets.forEach(s => totalWords += s.words.length);
-
     headerBtn.innerHTML = '';
     
     let html = `
@@ -247,6 +228,12 @@ function renderHome() {
         </div>
         <button class="btn btn-yellow" onclick="renderWrongPractice()">🔥 练习错词</button>
         <button class="btn btn-outline" onclick="renderInput()">✏️ 录入新词</button>
+        
+        <!-- Import/Export Buttons -->
+        <div class="btn-small-row">
+           <button class="btn-small" onclick="exportAllData()">📤 备份数据</button>
+           <button class="btn-small" onclick="document.getElementById('fileInput').click()">📥 恢复数据</button>
+        </div>
       </div>
       
       <h3 style="margin-left:8px;margin-bottom:12px">练习列表</h3>
@@ -261,9 +248,7 @@ function renderHome() {
           </div>
         `).join('')}
       </div>
-      <div style="text-align:center;margin-top:20px;color:#999;font-size:12px">
-        Hosted on GitHub Pages • V2.0
-      </div>
+      <div style="text-align:center;margin-top:20px;color:#999;font-size:12px">Hosted on GitHub Pages • V2.1</div>
     `;
     app.innerHTML = html;
   });
@@ -272,16 +257,13 @@ function renderHome() {
 function renderInput() {
   headerBtn.innerHTML = `<button class="btn-outline" style="padding:6px 12px;border-radius:8px;font-size:14px" onclick="renderHome()">返回</button>`;
   const today = new Date().toISOString().slice(0, 10);
-  
   app.innerHTML = `
     <div class="card">
       <h3>录入单词</h3>
       <label class="subtitle">日期</label>
       <input type="date" id="newDate" value="${today}" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;margin:8px 0 16px;">
-      
       <label class="subtitle">单词列表 (每行一个)</label>
       <textarea id="newWords" rows="8" placeholder="apple\nbanana\norange"></textarea>
-      
       <div style="margin-top:20px">
         <button class="btn btn-primary" onclick="saveSet()">保存</button>
         <button class="btn btn-red" onclick="deleteSetByDate()">删除选定日期的词集</button>
@@ -290,32 +272,78 @@ function renderInput() {
   `;
 }
 
-// --- 4. Logic: Saving Data ---
+// --- 4. Logic: Saving & Import/Export ---
 function saveSet() {
   const date = document.getElementById('newDate').value;
   const text = document.getElementById('newWords').value;
   if(!text.trim()) return alert("请输入单词");
-  
   const words = text.split(/\n+/).map(w => w.trim()).filter(w => w);
-  
   const tx = db.transaction('wordSets', 'readwrite');
   tx.objectStore('wordSets').put({ date, words });
-  tx.oncomplete = () => {
-    alert("保存成功!");
-    renderHome();
-  };
+  tx.oncomplete = () => { alert("保存成功!"); renderHome(); };
 }
 
 function deleteSetByDate() {
   const date = document.getElementById('newDate').value;
   if(!confirm(`确认删除 ${date} 的所有单词吗？`)) return;
-  
   const tx = db.transaction('wordSets', 'readwrite');
   tx.objectStore('wordSets').delete(date);
-  tx.oncomplete = () => {
-    alert("已删除");
-    renderHome();
+  tx.oncomplete = () => { alert("已删除"); renderHome(); };
+}
+
+// --- NEW: Export Logic ---
+function exportAllData() {
+  const tx = db.transaction(['wordSets', 'wrongBank'], 'readonly');
+  Promise.all([getAll(tx.objectStore('wordSets')), getAll(tx.objectStore('wrongBank'))])
+    .then(([sets, wrongs]) => {
+      const data = { wordSets: sets, wrongBank: wrongs, exportDate: new Date().toISOString() };
+      const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+      const url = URL.createObjectURL(blob);
+      
+      // Create download link
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `romeo_backup_${new Date().toISOString().slice(0,10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+}
+
+// --- NEW: Import Logic ---
+function importData(inputElement) {
+  const file = inputElement.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.wordSets && !data.wrongBank) throw new Error("Format error");
+      
+      const tx = db.transaction(['wordSets', 'wrongBank'], 'readwrite');
+      
+      // Import Sets
+      if(data.wordSets) {
+        data.wordSets.forEach(s => tx.objectStore('wordSets').put(s));
+      }
+      // Import Wrongs
+      if(data.wrongBank) {
+        data.wrongBank.forEach(w => tx.objectStore('wrongBank').put(w));
+      }
+      
+      tx.oncomplete = () => {
+        alert("恢复成功！数据已合并。");
+        renderHome();
+        inputElement.value = ''; // Reset
+      };
+      
+    } catch (err) {
+      alert("文件格式错误，请导入正确的备份文件。");
+    }
   };
+  reader.readAsText(file);
 }
 
 // --- 5. Practice Mode ---
@@ -324,13 +352,10 @@ function startPractice(date) {
   tx.objectStore('wordSets').get(date).onsuccess = (e) => {
     const data = e.target.result;
     if(!data) return;
-    
     currentSetDate = date;
     practiceList = data.words;
     currentIndex = 0;
-    stage = 1; // Start with recognition
-    wrongList = [];
-    
+    stage = 1; wrongList = [];
     renderPracticeUI();
   };
 }
@@ -339,137 +364,73 @@ function renderWrongPractice() {
   const tx = db.transaction('wrongBank', 'readonly');
   getAll(tx.objectStore('wrongBank')).then(list => {
     if(list.length === 0) return alert("错题本是空的！真棒！");
-    
     currentSetDate = 'wrong_bank';
     practiceList = list.map(i => i.word);
     currentIndex = 0;
-    stage = 2; // Direct dictation for wrong bank
-    wrongList = [];
+    stage = 2; wrongList = [];
     renderPracticeUI();
   });
 }
 
 function renderPracticeUI() {
   headerBtn.innerHTML = `<button class="btn-outline" style="padding:6px 12px;border-radius:8px;font-size:14px" onclick="if(confirm('退出练习？')) renderHome()">退出</button>`;
-  
   let title = stage === 1 ? "第一轮: 认读 & 拼写" : (stage === 2 ? "第二轮: 听写" : "错题重练");
   if(currentSetDate === 'wrong_bank') title = "错题突击";
-
   app.innerHTML = `
     <div style="text-align:center;margin-bottom:10px;font-weight:bold;color:#666">${title} (${currentIndex + 1}/${practiceList.length})</div>
-    <div class="card" id="practiceCard">
-      <!-- Content injected by loadWord() -->
-    </div>
+    <div class="card" id="practiceCard"></div>
   `;
-  
   loadWord();
 }
 
 function loadWord() {
-  if(currentIndex >= practiceList.length) {
-    handleRoundComplete();
-    return;
-  }
-
+  if(currentIndex >= practiceList.length) { handleRoundComplete(); return; }
   const word = practiceList[currentIndex];
   const container = document.getElementById('practiceCard');
-  
-  // Clean word for display logic
   const cleanWord = word.trim();
   const phonics = stage === 1 ? getPhonics(cleanWord) : "???";
   const displayWord = stage === 1 ? cleanWord : "";
   
   container.innerHTML = `
-    <div class="word-display">
-      <div class="word-text">${displayWord}</div>
-      <div class="phonics">${phonics}</div>
-    </div>
-    
-    <div style="text-align:center">
-      <button class="btn-outline" style="display:inline-block;width:auto;padding:8px 16px;border-radius:20px" onclick="speak('${cleanWord}')">🔊 发音</button>
-    </div>
-
-    <div class="blanks-container" id="blanksArea">
-      <!-- Blanks generated here -->
-    </div>
-    
+    <div class="word-display"><div class="word-text">${displayWord}</div><div class="phonics">${phonics}</div></div>
+    <div style="text-align:center"><button class="btn-outline" style="display:inline-block;width:auto;padding:8px 16px;border-radius:20px" onclick="speak('${cleanWord}')">🔊 发音</button></div>
+    <div class="blanks-container" id="blanksArea"></div>
     <div class="feedback-area" id="feedback"></div>
-
     <button class="btn btn-primary" id="confirmBtn" onclick="checkWord()">确认 (Enter)</button>
     ${stage === 1 ? `<button class="btn btn-outline" style="margin-top:0" onclick="skipWord()">跳过</button>` : ''}
   `;
-
-  // Init input handling
   setupInput(cleanWord);
-  
-  // Auto speak
   setTimeout(() => speak(cleanWord), 300);
 }
 
-// --- 6. Input & Checking Logic ---
+// --- 6. Input & Checking ---
 let targetWord = "";
 let currentInput = "";
-
 function setupInput(word) {
-  targetWord = word;
-  currentInput = "";
-  
-  const blanks = document.getElementById('blanksArea');
-  blanks.innerHTML = '';
-  
+  targetWord = word; currentInput = "";
+  const blanks = document.getElementById('blanksArea'); blanks.innerHTML = '';
   for(let i=0; i<word.length; i++) {
-    const b = document.createElement('div');
-    b.className = 'blank-char';
-    if(word[i] === ' ' || word[i] === '-') {
-      b.textContent = word[i];
-      b.style.borderBottom = 'none';
-    }
+    const b = document.createElement('div'); b.className = 'blank-char';
+    if(word[i] === ' ' || word[i] === '-') { b.textContent = word[i]; b.style.borderBottom = 'none'; }
     blanks.appendChild(b);
   }
-  
   const hidden = document.getElementById('hiddenInput');
-  hidden.value = '';
-  hidden.focus(); // Try to focus
-  
-  // If focus failed (due to no user gesture), touching blanks triggers it
-  blanks.onclick = () => {
-    hidden.focus();
-    updateBlanksUI(); // Ensure active state
-  };
-  
-  // Listener
-  hidden.oninput = (e) => {
-    // Filter non-alpha if needed, or allow all
-    // Let's allow standard typing but maybe lowercase
-    let val = e.target.value;
-    // Basic filter: allow letters, hyphens, spaces
-    val = val.slice(0, targetWord.length);
-    currentInput = val;
-    updateBlanksUI();
-  };
-  
-  // Handle Enter key
-  hidden.onkeydown = (e) => {
-    if(e.key === 'Enter') checkWord();
-  };
-  
+  hidden.value = ''; hidden.focus();
+  blanks.onclick = () => { hidden.focus(); updateBlanksUI(); };
+  hidden.oninput = (e) => { currentInput = e.target.value.slice(0, targetWord.length); updateBlanksUI(); };
+  hidden.onkeydown = (e) => { if(e.key === 'Enter') checkWord(); };
   updateBlanksUI();
 }
 
 function updateBlanksUI() {
   const chars = document.querySelectorAll('.blank-char');
-  const len = targetWord.length;
-  
-  for(let i=0; i<len; i++) {
-    const charElem = chars[i];
+  for(let i=0; i<targetWord.length; i++) {
     if(targetWord[i] === ' ' || targetWord[i] === '-') continue;
-    
+    const charElem = chars[i];
     const inputChar = currentInput[i] || '';
     charElem.textContent = inputChar;
-    
-    // Styling
     charElem.classList.remove('active', 'filled');
-    if(i === currentInput.length) charElem.classList.add('active'); // Cursor pos
+    if(i === currentInput.length) charElem.classList.add('active');
     if(inputChar) charElem.classList.add('filled');
   }
 }
@@ -478,142 +439,50 @@ function checkWord() {
   const fb = document.getElementById('feedback');
   const cleanInput = currentInput.trim().toLowerCase();
   const cleanTarget = targetWord.trim().toLowerCase();
-  
   if(!cleanInput) return;
-
   if(cleanInput === cleanTarget) {
-    // Correct
     fb.innerHTML = `<span class="correct-text">太棒了！🎉</span>`;
     document.querySelectorAll('.blank-char').forEach(c => c.classList.add('correct'));
     playSuccessTone();
-    
-    if(currentSetDate === 'wrong_bank') {
-      removeFromWrongBank(targetWord);
-    }
-    
-    setTimeout(() => {
-      currentIndex++;
-      loadWord();
-    }, 800);
+    if(currentSetDate === 'wrong_bank') removeFromWrongBank(targetWord);
+    setTimeout(() => { currentIndex++; loadWord(); }, 800);
   } else {
-    // Wrong
     fb.innerHTML = `<span class="wrong-text">正确拼写: ${targetWord}</span>`;
     document.querySelectorAll('.blank-char').forEach(c => c.classList.add('wrong'));
-    
-    if(stage !== 3) {
-      if(!wrongList.includes(targetWord)) wrongList.push(targetWord);
-      addToWrongBank(targetWord);
-    }
-    
-    // User must see the error
+    if(stage !== 3) { if(!wrongList.includes(targetWord)) wrongList.push(targetWord); addToWrongBank(targetWord); }
     document.getElementById('confirmBtn').innerText = "记住了，继续";
-    document.getElementById('confirmBtn').onclick = () => {
-       currentInput = "";
-       document.getElementById('hiddenInput').value = "";
-       loadWord(); // Reload to clear state or move on? 
-       // Logic: If wrong, we just move on but add to wrong list?
-       // Let's just move next index after acknowledgment
-       currentIndex++;
-       loadWord();
-    };
+    document.getElementById('confirmBtn').onclick = () => { currentIndex++; loadWord(); };
   }
 }
 
-function skipWord() {
-  currentIndex++;
-  loadWord();
-}
+function skipWord() { currentIndex++; loadWord(); }
 
-// --- 7. Round Management ---
 function handleRoundComplete() {
-  if(stage === 1) {
-    // Finish visible round
-    alert("第一轮认读完成！\n接下来是听写模式。");
-    stage = 2;
-    currentIndex = 0;
-    // Shuffle practice list for dictation? Maybe not, keep order.
-    renderPracticeUI();
-  } else if (stage === 2) {
-    // Finish dictation
-    if(wrongList.length > 0) {
-      alert(`完成！有 ${wrongList.length} 个单词需要复习。`);
-      practiceList = [...wrongList];
-      wrongList = [];
-      stage = 3;
-      currentIndex = 0;
-      renderPracticeUI();
-    } else {
-      finishAll();
-    }
-  } else {
-    // Finish Retry
-    finishAll();
-  }
+  if(stage === 1) { alert("第一轮认读完成！\n接下来是听写模式。"); stage = 2; currentIndex = 0; renderPracticeUI(); }
+  else if (stage === 2) {
+    if(wrongList.length > 0) { alert(`完成！有 ${wrongList.length} 个单词需要复习。`); practiceList = [...wrongList]; wrongList = []; stage = 3; currentIndex = 0; renderPracticeUI(); }
+    else finishAll();
+  } else finishAll();
 }
 
 function finishAll() {
-  app.innerHTML = `
-    <div class="card" style="text-align:center;padding:40px">
-      <div style="font-size:60px">🏆</div>
-      <h2>练习完成！</h2>
-      <p>本次练习非常出色！</p>
-      <button class="btn btn-primary" onclick="renderHome()">返回首页</button>
-    </div>
-  `;
+  app.innerHTML = `<div class="card" style="text-align:center;padding:40px"><div style="font-size:60px">🏆</div><h2>练习完成！</h2><p>本次练习非常出色！</p><button class="btn btn-primary" onclick="renderHome()">返回首页</button></div>`;
 }
 
-// --- 8. Helper Functions ---
-
-// Phonics Splitter (Simple Rule)
-function getPhonics(w) {
-  const matches = w.match(/[^aeiouy]*[aeiouy]+(?:[^aeiouy]*$|[^aeiouy](?=[^aeiouy]))?/gi);
-  return matches ? matches.join(' · ') : w;
-}
-
-// IndexedDB Helper
-function getAll(store) {
-  return new Promise((resolve) => {
-    const r = store.getAll();
-    r.onsuccess = () => resolve(r.result);
-  });
-}
-
-// Wrong Bank Logic
-function addToWrongBank(word) {
-  const tx = db.transaction('wrongBank', 'readwrite');
-  tx.objectStore('wrongBank').put({ 
-    word: word, 
-    lastWrong: new Date().toISOString() 
-  });
-}
-
-function removeFromWrongBank(word) {
-  const tx = db.transaction('wrongBank', 'readwrite');
-  tx.objectStore('wrongBank').delete(word);
-}
-
-// TTS
+// --- 8. Helpers ---
+function getPhonics(w) { const m = w.match(/[^aeiouy]*[aeiouy]+(?:[^aeiouy]*$|[^aeiouy](?=[^aeiouy]))?/gi); return m ? m.join(' · ') : w; }
+function getAll(store) { return new Promise((r) => { const req = store.getAll(); req.onsuccess = () => r(req.result); }); }
+function addToWrongBank(word) { const tx = db.transaction('wrongBank', 'readwrite'); tx.objectStore('wrongBank').put({ word: word, lastWrong: new Date().toISOString() }); }
+function removeFromWrongBank(word) { const tx = db.transaction('wrongBank', 'readwrite'); tx.objectStore('wrongBank').delete(word); }
 function speak(text) {
   speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'en-US';
-  u.rate = 0.9;
-  
-  // Select Voice (iOS Daniel or Samantha preferred)
+  const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.rate = 0.9;
   const allVoices = speechSynthesis.getVoices();
-  const preferred = allVoices.find(v => v.name === 'Daniel') || 
-                    allVoices.find(v => v.name === 'Samantha') ||
-                    allVoices.find(v => v.lang.includes('en'));
+  const preferred = allVoices.find(v => v.name === 'Daniel') || allVoices.find(v => v.name === 'Samantha') || allVoices.find(v => v.lang.includes('en'));
   if(preferred) u.voice = preferred;
-  
   speechSynthesis.speak(u);
 }
-
-// Initialize Voices
-speechSynthesis.onvoiceschanged = () => {
-  voices = speechSynthesis.getVoices();
-};
-
+speechSynthesis.onvoiceschanged = () => { voices = speechSynthesis.getVoices(); };
 </script>
 </body>
 </html>
