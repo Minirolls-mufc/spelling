@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
 
-<title>Romeo's Spelling</title>
+<title>Romeo's Spelling practice</title>
 <style>
   :root {
     --bg: #f2f6fa; --card: #ffffff; --primary: #007AFF; 
@@ -23,7 +23,6 @@
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body {
     margin: 0; padding: 0; 
-    /* 还原为系统标准字体，清晰易读 */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background: var(--bg); color: var(--text);
     height: 100vh; display: flex; flex-direction: column;
@@ -44,7 +43,6 @@
     border-radius: 12px; display: flex; align-items: center; justify-content: center;
     font-weight: 900; font-size: 24px; color: #333;
     box-shadow: 0 4px 0 rgba(0,0,0,0.1); 
-    /* 头像里的R也可以保留一点个性 */
     font-family: 'Fredoka One', cursive; 
   }
   h1 { margin: 0; font-size: 18px; color: #000; font-weight: 700; }
@@ -102,7 +100,6 @@
     text-align: center; margin: 20px 0;
     min-height: 120px; display: flex; flex-direction: column; justify-content: center;
   }
-  /* 恢复标准等宽字体，方便看清拼写 */
   .word-text { font-size: 52px; font-weight: 700; font-family: "Courier New", monospace; letter-spacing: 2px; color: #111; }
   .phonics { font-size: 24px; color: #555; margin-top: 8px; font-weight: 500; background:#e3f2fd; color:#1565c0; display:inline-block; padding:4px 14px; border-radius:20px; margin: 10px auto 0;}
   
@@ -113,7 +110,7 @@
   .blank-char {
     width: 48px; height: 58px;
     border-bottom: 4px solid #e0e0e0;
-    font-size: 32px; font-weight: 600; /* 标准字体粗体 */
+    font-size: 32px; font-weight: 600;
     display: flex; align-items: center; justify-content: center;
     background: #fff; color: #333; border-radius: 8px;
     transition: all 0.2s;
@@ -191,7 +188,6 @@
 <!-- iOS Audio Unlock Overlay -->
 <div id="startOverlay">
   <div class="avatar" style="width:100px;height:100px;font-size:50px;margin-bottom:24px;box-shadow:0 12px 24px rgba(0,0,0,0.15)">R</div>
-  <!-- Art Font only for this Title -->
   <h2 style="margin-bottom:8px;font-size:32px;font-family:'Fredoka One',cursive">Ready?</h2>
   <p style="color:#888;margin-bottom:32px">点击开始以启用声音</p>
   <button class="btn btn-primary" style="width:220px" onclick="unlockAudio()">🚀 LET'S GO</button>
@@ -252,7 +248,6 @@ function renderHome() {
   headerBtn.innerHTML = '';
   app.innerHTML = `
     <div style="margin-top:20px;text-align:center;margin-bottom:30px">
-        <!-- Only this is Art Font -->
         <div class="hero-title">Hi, Romeo!</div>
         <div style="font-size:16px;color:#666;font-weight:600">今天想做点什么？</div>
     </div>
@@ -265,7 +260,6 @@ function renderHome() {
       <span style="font-size:24px">🏆</span> 成就 & 记录
     </button>
     
-    <!-- Changed Text -->
     <button class="btn btn-outline" onclick="renderWordManager()">
       <span style="font-size:24px">📂</span> 单词管理
     </button>
@@ -280,12 +274,11 @@ function renderHome() {
   `;
 }
 
-// --- PAGE: WORD MANAGER (Replaces Input) ---
+// --- PAGE: WORD MANAGER ---
 function renderWordManager() {
   headerBtn.innerHTML = `<button class="btn-small" onclick="renderHome()">🏠 首页</button>`;
   const today = new Date().toISOString().slice(0, 10);
   
-  // Fetch existing sets to list them
   const tx = db.transaction('wordSets', 'readonly');
   getAll(tx.objectStore('wordSets')).then(sets => {
     sets.sort((a,b) => b.date.localeCompare(a.date));
@@ -308,24 +301,19 @@ function renderWordManager() {
     app.innerHTML = `
       <div class="card" id="managerCard">
         <h3 style="margin-top:0" id="mgrTitle">录入 / 编辑单词</h3>
-        
         <div style="background:#e3f2fd;padding:10px;border-radius:8px;font-size:13px;color:#1565c0;margin-bottom:12px;line-height:1.5">
           💡 <b>提示：</b> 可用 "/" 或 "-" 指定分音节。<br>例如：<code>ap/ple</code>
         </div>
-        
         <label class="subtitle">日期 (ID)</label>
         <input type="date" id="newDate" value="${today}" style="width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:12px;margin:8px 0 16px;background:#fff">
-        
         <label class="subtitle">单词列表 (每行一个)</label>
         <textarea id="newWords" rows="6" placeholder="例如：&#10;apple&#10;banana&#10;happy"></textarea>
-        
         <div style="margin-top:20px;display:flex;gap:10px">
           <button class="btn btn-primary" style="flex:2" onclick="saveSet()">💾 保存 / 更新</button>
           <button class="btn btn-red" id="delBtn" style="flex:1;display:none" onclick="deleteSetByDate()">🗑️ 删除</button>
         </div>
         <button class="btn-small" id="cancelBtn" style="margin-top:10px;width:100%;display:none" onclick="renderWordManager()">取消编辑 (返回新建)</button>
       </div>
-
       <h4 style="margin-left:10px;margin-bottom:10px;color:#666">历史词组管理</h4>
       <div class="card" style="padding:0">
          ${setsListHtml}
@@ -339,18 +327,12 @@ function editSet(date) {
     tx.objectStore('wordSets').get(date).onsuccess = (e) => {
         const data = e.target.result;
         if (!data) return;
-
-        // Populate Form
         document.getElementById('mgrTitle').innerText = "正在编辑: " + date;
         document.getElementById('newDate').value = data.date;
-        document.getElementById('newDate').disabled = true; // Prevent changing date key easily to avoid dups
+        document.getElementById('newDate').disabled = true; 
         document.getElementById('newWords').value = data.words.join('\n');
-        
-        // Show buttons
         document.getElementById('delBtn').style.display = 'block';
         document.getElementById('cancelBtn').style.display = 'block';
-        
-        // Scroll to top
         document.getElementById('app').scrollTop = 0;
     };
 }
@@ -400,29 +382,23 @@ function renderSetSelection() {
   });
 }
 
-// --- PAGE: RECORDS / ACHIEVEMENTS ---
+// --- PAGE: RECORDS ---
 function renderRecords() {
   headerBtn.innerHTML = `<button class="btn-small" onclick="renderHome()">🏠 首页</button>`;
   
   const tx = db.transaction('practiceLogs', 'readonly');
   getAll(tx.objectStore('practiceLogs')).then(logs => {
     logs.sort((a,b) => b.timestamp - a.timestamp);
-    
-    // Stats calculation
     let totalStars = 0;
     let allMasteredWords = new Set();
-
     logs.forEach(l => {
         totalStars += l.count;
-        if(l.words && Array.isArray(l.words)) {
-            l.words.forEach(w => allMasteredWords.add(w.toLowerCase()));
-        }
+        if(l.words && Array.isArray(l.words)) { l.words.forEach(w => allMasteredWords.add(w.toLowerCase())); }
     });
     
     const rockets = Math.floor(totalStars / 10);
     const currentStars = totalStars % 10;
     
-    // Icons
     let rocketsHtml = '';
     for(let i=0; i<rockets; i++) rocketsHtml += '🚀 ';
     if(rockets === 0) rocketsHtml = '<span style="font-size:14px;opacity:0.6;font-weight:normal">加油练习赚取火箭！</span>';
@@ -431,13 +407,11 @@ function renderRecords() {
     for(let i=0; i<currentStars; i++) starsHtml += '⭐ ';
     for(let i=currentStars; i<10; i++) starsHtml += '<span style="opacity:0.2">⭐</span> ';
 
-    // History List
     let historyHtml = logs.length === 0 ? '<div style="text-align:center;padding:20px;color:#999">暂无记录</div>' : '';
     
     logs.forEach((log, index) => {
         const wordsArr = log.words || [];
         const wordsHtml = wordsArr.map(w => `<span class="detail-tag">${w}</span>`).join('');
-        
         historyHtml += `
             <div class="history-item">
                 <div class="history-header" onclick="toggleHistory(${index})">
@@ -456,7 +430,6 @@ function renderRecords() {
             </div>
         `;
     });
-    
     const wallHtml = Array.from(allMasteredWords).sort().map(w => `<div class="wall-item">${w}</div>`).join('');
 
     app.innerHTML = `
@@ -474,12 +447,10 @@ function renderRecords() {
             </div>
         </div>
       </div>
-      
       <div class="card">
         <h3 style="margin:0 0 10px 0">单词墙 (${allMasteredWords.size})</h3>
         <div class="word-wall">${wallHtml || '<span style="color:#999;font-size:13px">还没有掌握单词哦</span>'}</div>
       </div>
-
       <h3 style="margin-left:5px;margin-top:20px">练习足迹</h3>
       <div class="history-list">
         ${historyHtml}
@@ -490,10 +461,7 @@ function renderRecords() {
 
 function toggleHistory(idx) {
     const el = document.getElementById(`hist-detail-${idx}`);
-    if(el) {
-        if(el.classList.contains('show')) el.classList.remove('show');
-        else el.classList.add('show');
-    }
+    if(el) { el.classList.toggle('show'); }
 }
 
 // --- LOGIC: SAVE/IMPORT/EXPORT ---
@@ -504,11 +472,7 @@ function saveSet() {
   const words = text.split(/\n+/).map(w => w.trim()).filter(w => w);
   const tx = db.transaction('wordSets', 'readwrite');
   tx.objectStore('wordSets').put({ date, words });
-  tx.oncomplete = () => { 
-      alert("保存成功!"); 
-      // Refresh the manager page to show updated list
-      renderWordManager(); 
-  };
+  tx.oncomplete = () => { alert("保存成功!"); renderWordManager(); };
 }
 
 function deleteSetByDate() {
@@ -516,10 +480,7 @@ function deleteSetByDate() {
   if(!confirm(`确认删除 ${date} 的所有单词吗？`)) return;
   const tx = db.transaction('wordSets', 'readwrite');
   tx.objectStore('wordSets').delete(date);
-  tx.oncomplete = () => { 
-      alert("已删除"); 
-      renderWordManager(); 
-  };
+  tx.oncomplete = () => { alert("已删除"); renderWordManager(); };
 }
 
 function exportAllData() {
@@ -546,17 +507,27 @@ function exportAllData() {
 function importData(inputElement) {
   const file = inputElement.files[0];
   if (!file) return;
+  if(!confirm("⚠️ 警告：恢复数据将会【清空】当前设备上所有的历史记录和单词，完全替换为备份文件里的内容。\n\n确定要覆盖吗？")) {
+     inputElement.value = ''; 
+     return;
+  }
   const reader = new FileReader();
   reader.onload = (e) => {
     try {
       const data = JSON.parse(e.target.result);
-      if (!data.wordSets && !data.wrongBank) throw new Error("Format error");
+      if (!data.wordSets && !data.wrongBank && !data.practiceLogs) throw new Error("Format error");
       const tx = db.transaction(['wordSets', 'wrongBank', 'practiceLogs'], 'readwrite');
-      if(data.wordSets) data.wordSets.forEach(s => tx.objectStore('wordSets').put(s));
-      if(data.wrongBank) data.wrongBank.forEach(w => tx.objectStore('wrongBank').put(w));
-      if(data.practiceLogs) data.practiceLogs.forEach(l => tx.objectStore('practiceLogs').put(l));
+      
+      tx.objectStore('wordSets').clear();
+      tx.objectStore('wrongBank').clear();
+      tx.objectStore('practiceLogs').clear();
+      
+      (data.wordSets || []).forEach(s => tx.objectStore('wordSets').put(s));
+      (data.wrongBank || []).forEach(w => tx.objectStore('wrongBank').put(w));
+      (data.practiceLogs || []).forEach(l => tx.objectStore('practiceLogs').put(l));
+      
       tx.oncomplete = () => { alert("恢复成功！"); renderHome(); inputElement.value = ''; };
-    } catch (err) { alert("文件错误"); }
+    } catch (err) { alert("文件错误"); inputElement.value = ''; }
   };
   reader.readAsText(file);
 }
@@ -606,7 +577,6 @@ function loadWord() {
   
   const rawWord = practiceList[currentIndex];
   const cleanWord = rawWord.replace(/[\/\-]/g, ''); 
-  
   const container = document.getElementById('practiceCard');
   
   let phonicsDisplay = "";
@@ -622,13 +592,13 @@ function loadWord() {
   
   container.innerHTML = `
     <div class="word-display">
-        <div class="word-text" style="color:${stage===1?'#333':'#ccc'}">${displayWord}</div>
+        <div class="word-text" style="color:${stage===1?'#111':'#ccc'}">${displayWord}</div>
         ${phonicsDisplay ? `<div class="phonics">${phonicsDisplay}</div>` : '<div style="height:38px"></div>'}
     </div>
     
     <div style="text-align:center;margin-bottom:20px">
         <button class="btn-outline" style="display:inline-flex;width:auto;padding:10px 20px;border-radius:30px;align-items:center;gap:5px" onclick="speak('${cleanWord}')">
-            <span>🔊</span> <span style="font-weight:bold">听发音</span>
+            <span>🔊</span> <span style="font-weight:600">听发音</span>
         </button>
     </div>
 
@@ -695,9 +665,7 @@ function checkWord() {
         sessionMasteredSet.add(cleanTarget); 
         if(currentSetDate === 'wrong_bank') removeFromWrongBank(targetWord);
     }
-
     setTimeout(() => { currentIndex++; loadWord(); }, 800);
-
   } else {
     fb.innerHTML = `<span style="color:var(--lego-red)">正确: ${targetWord}</span>`;
     document.querySelectorAll('.blank-char').forEach(c => c.classList.add('wrong'));
@@ -730,10 +698,7 @@ function checkWord() {
   }
 }
 
-function skipWord() {
-  currentIndex++; 
-  loadWord(); 
-}
+function skipWord() { currentIndex++; loadWord(); }
 
 function handleRoundComplete() {
   if(stage === 1) { 
@@ -753,7 +718,6 @@ function handleRoundComplete() {
 
 function finishAll() {
   const masteredCount = sessionMasteredSet.size;
-  
   if(masteredCount > 0) {
     const tx = db.transaction('practiceLogs', 'readwrite');
     tx.objectStore('practiceLogs').add({
@@ -764,7 +728,6 @@ function finishAll() {
         source: currentSetDate
     });
   }
-
   app.innerHTML = `
     <div class="card" style="text-align:center;padding:50px 20px;margin-top:40px">
       <div style="font-size:70px;margin-bottom:10px">🚀</div>
