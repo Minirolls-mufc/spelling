@@ -8,10 +8,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Romeo Spelling">
 <link rel="apple-touch-icon" href="https://img.icons8.com/color/180/lego-head.png">
-<!-- Google Fonts -->
+<!-- Google Fonts for Art Text -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Rounded+Mplus+1c:wght@400;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
 
 <title>Romeo's Spelling</title>
 <style>
@@ -23,7 +23,8 @@
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body {
     margin: 0; padding: 0; 
-    font-family: "Rounded Mplus 1c", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    /* 还原为系统标准字体，清晰易读 */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background: var(--bg); color: var(--text);
     height: 100vh; display: flex; flex-direction: column;
     overflow: hidden; 
@@ -31,7 +32,7 @@
 
   /* --- Layout --- */
   header {
-    background: rgba(255,255,255,0.92);
+    background: rgba(255,255,255,0.95);
     padding: 15px 20px; padding-top: max(15px, env(safe-area-inset-top));
     display: flex; align-items: center; justify-content: space-between;
     position: sticky; top: 0; z-index: 10; backdrop-filter: blur(10px);
@@ -42,10 +43,12 @@
     width: 44px; height: 44px; background: var(--lego-yellow);
     border-radius: 12px; display: flex; align-items: center; justify-content: center;
     font-weight: 900; font-size: 24px; color: #333;
-    box-shadow: 0 4px 0 rgba(0,0,0,0.1); font-family: 'Fredoka One', cursive;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.1); 
+    /* 头像里的R也可以保留一点个性 */
+    font-family: 'Fredoka One', cursive; 
   }
-  h1 { margin: 0; font-size: 20px; color: #000; letter-spacing: -0.5px; font-weight: 800; }
-  .subtitle { font-size: 12px; color: #888; font-weight: 500; }
+  h1 { margin: 0; font-size: 18px; color: #000; font-weight: 700; }
+  .subtitle { font-size: 12px; color: #888; font-weight: 400; }
 
   /* --- Main Container --- */
   #app {
@@ -53,25 +56,32 @@
     padding-bottom: max(30px, env(safe-area-inset-bottom));
   }
 
-  /* --- Artistic Text --- */
-  .art-font { font-family: 'Fredoka One', cursive; letter-spacing: 1px; }
+  /* --- Hero Title (Art Font) --- */
+  .hero-title {
+    font-family: 'Fredoka One', cursive; 
+    font-size: 56px; 
+    color: #333; 
+    text-shadow: 3px 3px 0px #ddd;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+  }
   
   /* --- Components --- */
   .card {
-    background: var(--card); border-radius: 20px; padding: 24px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.04); margin-bottom: 20px;
+    background: var(--card); border-radius: 16px; padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03); margin-bottom: 16px;
+    border: 1px solid rgba(0,0,0,0.02);
   }
   
   /* Buttons */
   .btn {
     display: flex; align-items: center; justify-content: center; gap: 10px;
-    width: 100%; padding: 18px; 
-    border: none; border-radius: 16px;
-    font-size: 18px; font-weight: 700; cursor: pointer;
+    width: 100%; padding: 16px; 
+    border: none; border-radius: 14px;
+    font-size: 17px; font-weight: 600; cursor: pointer;
     margin-bottom: 14px; transition: transform 0.1s;
     text-align: center;
     box-shadow: 0 4px 0 rgba(0,0,0,0.05);
-    font-family: "Rounded Mplus 1c", sans-serif;
   }
   .btn:active { transform: scale(0.98) translateY(2px); box-shadow: none; }
   
@@ -79,10 +89,11 @@
   .btn-yellow { background: var(--lego-yellow); color: #000; box-shadow: 0 4px 0 #d4ac00; }
   .btn-green { background: var(--success); color: #fff; box-shadow: 0 4px 0 #248a3d; }
   .btn-outline { background: #fff; color: var(--primary); border: 2px solid #eef2f6; box-shadow: none; }
+  .btn-red { background: #ffebee; color: #d32f2f; border: 1px solid #ffcdd2; box-shadow: none; }
   
   .btn-row { display: flex; gap: 12px; margin-top: 10px; }
   .btn-small {
-    flex: 1; padding: 12px; font-size: 14px; border-radius: 12px;
+    flex: 1; padding: 10px; font-size: 14px; border-radius: 10px;
     background: #f1f3f7; color: #666; border: none; font-weight: 600;
   }
 
@@ -91,8 +102,9 @@
     text-align: center; margin: 20px 0;
     min-height: 120px; display: flex; flex-direction: column; justify-content: center;
   }
-  .word-text { font-size: 52px; font-weight: 800; font-family: "Courier New", monospace; letter-spacing: 2px; }
-  .phonics { font-size: 26px; color: #555; margin-top: 8px; font-weight: 700; background:#e3f2fd; color:#1565c0; display:inline-block; padding:6px 16px; border-radius:20px; margin: 10px auto 0; font-family: "Rounded Mplus 1c", sans-serif;}
+  /* 恢复标准等宽字体，方便看清拼写 */
+  .word-text { font-size: 52px; font-weight: 700; font-family: "Courier New", monospace; letter-spacing: 2px; color: #111; }
+  .phonics { font-size: 24px; color: #555; margin-top: 8px; font-weight: 500; background:#e3f2fd; color:#1565c0; display:inline-block; padding:4px 14px; border-radius:20px; margin: 10px auto 0;}
   
   .blanks-container {
     display: flex; justify-content: center; flex-wrap: wrap; gap: 8px;
@@ -101,7 +113,7 @@
   .blank-char {
     width: 48px; height: 58px;
     border-bottom: 4px solid #e0e0e0;
-    font-size: 36px; font-weight: bold;
+    font-size: 32px; font-weight: 600; /* 标准字体粗体 */
     display: flex; align-items: center; justify-content: center;
     background: #fff; color: #333; border-radius: 8px;
     transition: all 0.2s;
@@ -119,41 +131,40 @@
   .big-score { font-size: 56px; font-weight: 900; margin: 10px 0; text-shadow: 0 4px 10px rgba(0,0,0,0.3); font-family: 'Fredoka One', cursive; }
   .icons-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 15px; font-size: 24px; }
   
+  /* Manage List */
+  .manage-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px; border-bottom: 1px solid #f0f0f0; cursor: pointer;
+  }
+  .manage-item:last-child { border-bottom: none; }
+  .manage-item:active { background: #f9f9f9; }
+
   .history-item {
     background: #fff; border-radius: 14px; margin-bottom: 12px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.02); overflow: hidden;
   }
-  .history-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 16px; cursor: pointer;
-  }
-  .history-date { font-weight: 800; color: #333; }
+  .history-header { display: flex; justify-content: space-between; align-items: center; padding: 16px; cursor: pointer; }
+  .history-date { font-weight: 700; color: #333; }
   .history-count { color: #666; font-size: 14px; display: flex; align-items: center; gap: 6px; }
-  .history-details {
-    padding: 0 16px 16px 16px; display: none; border-top: 1px solid #f0f0f0;
-  }
+  .history-details { padding: 0 16px 16px 16px; display: none; border-top: 1px solid #f0f0f0; }
   .history-details.show { display: block; }
-  .detail-tag {
-    display: inline-block; background: #e8f5e9; color: #2e7d32; 
-    padding: 4px 8px; border-radius: 6px; font-size: 13px; margin: 8px 4px 0 0; font-weight: bold;
-  }
-  
-  /* Word Wall */
+  .detail-tag { display: inline-block; background: #e8f5e9; color: #2e7d32; padding: 4px 8px; border-radius: 6px; font-size: 13px; margin: 8px 4px 0 0; font-weight: 600; }
   .word-wall { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-  .wall-item { background: #fff; border: 1px solid #eee; padding: 6px 10px; border-radius: 8px; font-size: 14px; font-weight: bold; color: #444; }
+  .wall-item { background: #fff; border: 1px solid #eee; padding: 6px 10px; border-radius: 8px; font-size: 14px; font-weight: 600; color: #444; }
 
-  /* --- Hidden Inputs --- */
+  /* Inputs */
   #hiddenInput { position: fixed; top: -100px; left: 0; opacity: 0; font-size: 16px; }
   #fileInput { display: none; }
+  textarea { width: 100%; border: 2px solid #e0e0e0; border-radius: 12px; padding: 14px; font-size: 16px; background: #fff; font-family: inherit; transition: border 0.2s;}
+  textarea:focus { border-color: var(--primary); outline: none; }
+  input[type="date"] { font-family: inherit; }
 
-  /* --- Overlay --- */
+  /* Overlay */
   #startOverlay {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(255,255,255,0.98); z-index: 100;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
   }
-  textarea { width: 100%; border: 2px solid #e0e0e0; border-radius: 12px; padding: 14px; font-size: 16px; background: #fff; transition: border 0.2s;}
-  textarea:focus { border-color: var(--primary); outline: none; }
 </style>
 </head>
 <body>
@@ -168,7 +179,7 @@
     <div class="avatar">R</div>
     <div>
       <h1>Romeo's Spelling</h1>
-      <div class="subtitle">Phonics & Fun</div>
+      <div class="subtitle">Phonics Practice</div>
     </div>
   </div>
   <div id="headerBtn"></div>
@@ -180,7 +191,8 @@
 <!-- iOS Audio Unlock Overlay -->
 <div id="startOverlay">
   <div class="avatar" style="width:100px;height:100px;font-size:50px;margin-bottom:24px;box-shadow:0 12px 24px rgba(0,0,0,0.15)">R</div>
-  <h2 class="art-font" style="margin-bottom:8px;font-size:28px">Ready?</h2>
+  <!-- Art Font only for this Title -->
+  <h2 style="margin-bottom:8px;font-size:32px;font-family:'Fredoka One',cursive">Ready?</h2>
   <p style="color:#888;margin-bottom:32px">点击开始以启用声音</p>
   <button class="btn btn-primary" style="width:220px" onclick="unlockAudio()">🚀 LET'S GO</button>
 </div>
@@ -189,11 +201,11 @@
 // --- 1. Global State & DB ---
 let db;
 let currentSetDate = null;
-let practiceList = []; // Full list of current set
+let practiceList = []; 
 let currentIndex = 0;
-let stage = 1; // 1:认读(First View), 2:听写(Dictation), 3:订正(Correction)
-let wrongList = []; // Words wrong in Stage 2
-let sessionMasteredSet = new Set(); // Words correctly spelled in Stage 2 or 3
+let stage = 1; 
+let wrongList = []; 
+let sessionMasteredSet = new Set(); 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 function playSuccessTone() {
@@ -240,7 +252,8 @@ function renderHome() {
   headerBtn.innerHTML = '';
   app.innerHTML = `
     <div style="margin-top:20px;text-align:center;margin-bottom:30px">
-        <div class="art-font" style="font-size:48px;color:#333;text-shadow:2px 2px 0px #eee;margin-bottom:10px">Hi, Romeo!</div>
+        <!-- Only this is Art Font -->
+        <div class="hero-title">Hi, Romeo!</div>
         <div style="font-size:16px;color:#666;font-weight:600">今天想做点什么？</div>
     </div>
 
@@ -252,8 +265,9 @@ function renderHome() {
       <span style="font-size:24px">🏆</span> 成就 & 记录
     </button>
     
-    <button class="btn btn-outline" onclick="renderInput()">
-      <span style="font-size:24px">✏️</span> 录入新词
+    <!-- Changed Text -->
+    <button class="btn btn-outline" onclick="renderWordManager()">
+      <span style="font-size:24px">📂</span> 单词管理
     </button>
 
     <div class="card" style="margin-top:30px;background:#fff">
@@ -264,6 +278,81 @@ function renderHome() {
       </div>
     </div>
   `;
+}
+
+// --- PAGE: WORD MANAGER (Replaces Input) ---
+function renderWordManager() {
+  headerBtn.innerHTML = `<button class="btn-small" onclick="renderHome()">🏠 首页</button>`;
+  const today = new Date().toISOString().slice(0, 10);
+  
+  // Fetch existing sets to list them
+  const tx = db.transaction('wordSets', 'readonly');
+  getAll(tx.objectStore('wordSets')).then(sets => {
+    sets.sort((a,b) => b.date.localeCompare(a.date));
+    
+    let setsListHtml = '';
+    if (sets.length === 0) {
+        setsListHtml = '<div style="padding:15px;color:#999;text-align:center">暂无历史记录</div>';
+    } else {
+        setsListHtml = sets.map(s => `
+            <div class="manage-item" onclick="editSet('${s.date}')">
+                <div>
+                    <div style="font-weight:bold;color:#333">📅 ${s.date}</div>
+                    <div style="font-size:12px;color:#888;margin-top:2px">${s.words.length} 个单词</div>
+                </div>
+                <div style="color:var(--primary);font-size:14px;font-weight:600">编辑 ›</div>
+            </div>
+        `).join('');
+    }
+
+    app.innerHTML = `
+      <div class="card" id="managerCard">
+        <h3 style="margin-top:0" id="mgrTitle">录入 / 编辑单词</h3>
+        
+        <div style="background:#e3f2fd;padding:10px;border-radius:8px;font-size:13px;color:#1565c0;margin-bottom:12px;line-height:1.5">
+          💡 <b>提示：</b> 可用 "/" 或 "-" 指定分音节。<br>例如：<code>ap/ple</code>
+        </div>
+        
+        <label class="subtitle">日期 (ID)</label>
+        <input type="date" id="newDate" value="${today}" style="width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:12px;margin:8px 0 16px;background:#fff">
+        
+        <label class="subtitle">单词列表 (每行一个)</label>
+        <textarea id="newWords" rows="6" placeholder="例如：&#10;apple&#10;banana&#10;happy"></textarea>
+        
+        <div style="margin-top:20px;display:flex;gap:10px">
+          <button class="btn btn-primary" style="flex:2" onclick="saveSet()">💾 保存 / 更新</button>
+          <button class="btn btn-red" id="delBtn" style="flex:1;display:none" onclick="deleteSetByDate()">🗑️ 删除</button>
+        </div>
+        <button class="btn-small" id="cancelBtn" style="margin-top:10px;width:100%;display:none" onclick="renderWordManager()">取消编辑 (返回新建)</button>
+      </div>
+
+      <h4 style="margin-left:10px;margin-bottom:10px;color:#666">历史词组管理</h4>
+      <div class="card" style="padding:0">
+         ${setsListHtml}
+      </div>
+    `;
+  });
+}
+
+function editSet(date) {
+    const tx = db.transaction('wordSets', 'readonly');
+    tx.objectStore('wordSets').get(date).onsuccess = (e) => {
+        const data = e.target.result;
+        if (!data) return;
+
+        // Populate Form
+        document.getElementById('mgrTitle').innerText = "正在编辑: " + date;
+        document.getElementById('newDate').value = data.date;
+        document.getElementById('newDate').disabled = true; // Prevent changing date key easily to avoid dups
+        document.getElementById('newWords').value = data.words.join('\n');
+        
+        // Show buttons
+        document.getElementById('delBtn').style.display = 'block';
+        document.getElementById('cancelBtn').style.display = 'block';
+        
+        // Scroll to top
+        document.getElementById('app').scrollTop = 0;
+    };
 }
 
 // --- PAGE: SET SELECTION ---
@@ -295,10 +384,9 @@ function renderSetSelection() {
       html += `<div style="text-align:center;padding:40px;color:#999">暂无练习，快去录入新词吧！</div>`;
     } else {
       html += sets.map(s => {
-          // Display cleaned words in list (remove slashes)
           const previewWords = s.words.map(w => w.replace(/[\/\-]/g, '')).slice(0,5).join(', ');
           return `
-            <div class="set-item" style="display:flex;justify-content:space-between;align-items:center;padding:16px;background:#fff;border-radius:12px;margin-bottom:10px;box-shadow:0 2px 5px rgba(0,0,0,0.02)" onclick="startPractice('${s.date}')">
+            <div class="set-item" style="display:flex;justify-content:space-between;align-items:center;padding:16px;background:#fff;border-radius:12px;margin-bottom:10px;box-shadow:0 2px 5px rgba(0,0,0,0.02);cursor:pointer" onclick="startPractice('${s.date}')">
               <div class="set-info">
                 <strong style="font-size:17px;color:#333">📅 ${s.date}</strong>
                 <span style="font-size:13px;color:#888">${previewWords}${s.words.length>5?'...':''}</span>
@@ -369,7 +457,6 @@ function renderRecords() {
         `;
     });
     
-    // Word Wall HTML
     const wallHtml = Array.from(allMasteredWords).sort().map(w => `<div class="wall-item">${w}</div>`).join('');
 
     app.innerHTML = `
@@ -409,30 +496,6 @@ function toggleHistory(idx) {
     }
 }
 
-// --- PAGE: INPUT ---
-function renderInput() {
-  headerBtn.innerHTML = `<button class="btn-small" onclick="renderHome()">🏠 首页</button>`;
-  const today = new Date().toISOString().slice(0, 10);
-  app.innerHTML = `
-    <div class="card">
-      <h3 style="margin-top:0">录入新词</h3>
-      <div style="background:#e3f2fd;padding:10px;border-radius:8px;font-size:12px;color:#1565c0;margin-bottom:10px">
-        💡 <b>提示：</b> 如果想指定分音节，请用 "/" 或 "-" 隔开。<br>例如：<code>el/e/phant</code> 或 <code>ba-na-na</code>
-      </div>
-      <label class="subtitle">日期</label>
-      <input type="date" id="newDate" value="${today}" style="width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:12px;margin:8px 0 16px;background:#fff">
-      
-      <label class="subtitle">单词列表 (每行一个)</label>
-      <textarea id="newWords" rows="8" placeholder="例如：&#10;ap/ple&#10;ba/na/na&#10;hap/py"></textarea>
-      
-      <div style="margin-top:20px">
-        <button class="btn btn-primary" onclick="saveSet()">💾 保存词表</button>
-        <button class="btn btn-outline" style="color:#d32f2f;border-color:#ffcdd2" onclick="deleteSetByDate()">🗑️ 删除该日词表</button>
-      </div>
-    </div>
-  `;
-}
-
 // --- LOGIC: SAVE/IMPORT/EXPORT ---
 function saveSet() {
   const date = document.getElementById('newDate').value;
@@ -441,7 +504,11 @@ function saveSet() {
   const words = text.split(/\n+/).map(w => w.trim()).filter(w => w);
   const tx = db.transaction('wordSets', 'readwrite');
   tx.objectStore('wordSets').put({ date, words });
-  tx.oncomplete = () => { alert("保存成功!"); renderSetSelection(); };
+  tx.oncomplete = () => { 
+      alert("保存成功!"); 
+      // Refresh the manager page to show updated list
+      renderWordManager(); 
+  };
 }
 
 function deleteSetByDate() {
@@ -449,7 +516,10 @@ function deleteSetByDate() {
   if(!confirm(`确认删除 ${date} 的所有单词吗？`)) return;
   const tx = db.transaction('wordSets', 'readwrite');
   tx.objectStore('wordSets').delete(date);
-  tx.oncomplete = () => { alert("已删除"); renderSetSelection(); };
+  tx.oncomplete = () => { 
+      alert("已删除"); 
+      renderWordManager(); 
+  };
 }
 
 function exportAllData() {
@@ -534,17 +604,14 @@ function renderPracticeUI() {
 function loadWord() {
   if(currentIndex >= practiceList.length) { handleRoundComplete(); return; }
   
-  // Raw word might contain / or -
   const rawWord = practiceList[currentIndex];
-  const cleanWord = rawWord.replace(/[\/\-]/g, ''); // For logic checking
+  const cleanWord = rawWord.replace(/[\/\-]/g, ''); 
   
   const container = document.getElementById('practiceCard');
   
-  // Phonics Display: If manual / exists, use it. Else calculate.
   let phonicsDisplay = "";
   if(stage === 1) {
       if(rawWord.includes('/') || rawWord.includes('-')) {
-          // Use manual entry but replace separators with dot
           phonicsDisplay = rawWord.replace(/[\/\-]/g, ' · ');
       } else {
           phonicsDisplay = getImprovedPhonics(cleanWord);
@@ -591,7 +658,6 @@ function setupInput(word) {
   hidden.value = ''; hidden.focus();
   blanks.onclick = () => { hidden.focus(); updateBlanksUI(); };
   hidden.oninput = (e) => { 
-      // Filter non-alpha
       let val = e.target.value.replace(/[^a-zA-Z]/g, '');
       currentInput = val.slice(0, targetWord.length); 
       updateBlanksUI(); 
@@ -618,35 +684,29 @@ function checkWord() {
   const cleanInput = currentInput.trim().toLowerCase();
   const cleanTarget = targetWord.trim().toLowerCase();
   
-  if(!cleanInput) return; // Empty submission
+  if(!cleanInput) return; 
   
-  // Logic Branch
   if(cleanInput === cleanTarget) {
-    // === CORRECT ===
     fb.innerHTML = `<span style="color:var(--success)">太棒了！🎉</span>`;
     document.querySelectorAll('.blank-char').forEach(c => c.classList.add('correct'));
     playSuccessTone();
 
-    // Stats Logic: Only count in Stage 2 (Dictation) or Stage 3 (Correction)
     if(stage >= 2) { 
-        sessionMasteredSet.add(cleanTarget); // Use cleaned word for storage
+        sessionMasteredSet.add(cleanTarget); 
         if(currentSetDate === 'wrong_bank') removeFromWrongBank(targetWord);
     }
 
     setTimeout(() => { currentIndex++; loadWord(); }, 800);
 
   } else {
-    // === WRONG ===
     fb.innerHTML = `<span style="color:var(--lego-red)">正确: ${targetWord}</span>`;
     document.querySelectorAll('.blank-char').forEach(c => c.classList.add('wrong'));
     const btn = document.getElementById('confirmBtn');
 
     if(stage === 1) {
-        // Stage 1 Error: Clear and Retry
         btn.innerText = "记住了 (清空重试) ↺";
         btn.className = "btn btn-yellow";
         btn.onclick = () => {
-            // Reset UI
             currentInput = "";
             document.getElementById('hiddenInput').value = "";
             updateBlanksUI();
@@ -657,11 +717,8 @@ function checkWord() {
             btn.onclick = checkWord;
             document.getElementById('hiddenInput').focus();
         };
-        // NOTE: "Skip" button remains available in DOM
     } else {
-        // Stage 2/3 Error: Add to Wrong List
         if(stage === 2) { 
-            // Save raw word (keeping manual dividers if needed in future, but rawWord from list is safer)
             const rawW = practiceList[currentIndex];
             if(!wrongList.includes(rawW)) wrongList.push(rawW); 
             addToWrongBank(rawW); 
@@ -674,7 +731,6 @@ function checkWord() {
 }
 
 function skipWord() {
-  // Stage 1 Skip: Just move on, doesn't count as wrong.
   currentIndex++; 
   loadWord(); 
 }
@@ -691,7 +747,6 @@ function handleRoundComplete() {
       finishAll();
     }
   } else {
-    // Stage 3 complete
     finishAll();
   }
 }
@@ -705,7 +760,7 @@ function finishAll() {
         date: new Date().toISOString().slice(0,10),
         timestamp: Date.now(),
         count: masteredCount,
-        words: Array.from(sessionMasteredSet), // Store specific words
+        words: Array.from(sessionMasteredSet), 
         source: currentSetDate
     });
   }
@@ -723,44 +778,18 @@ function finishAll() {
 }
 
 // --- Helpers ---
-
-// Improved Heuristic Phonics
 function getImprovedPhonics(w) {
     const word = w.toLowerCase();
-    
-    // 1. Silent 'e' at end (makes previous vowel long, usually not a split)
-    // E.g. "cake" -> cake, "late" -> late
-    // But "table" -> ta-ble
-    
-    // Simple heuristic: VCV -> V-CV
-    // VCCV -> VC-CV
-    
-    // We try to split by vowel groups
-    // Regex for basic syllable chunks
-    // This is still an approximation. English is hard.
     const chunks = word.match(/[^aeiouy]*[aeiouy]+(?:[^aeiouy]*$|[^aeiouy](?=[^aeiouy]))?/gi);
-    
     if(!chunks || chunks.length <= 1) return word;
-    
-    // Post-process to join silent e or endings
-    // e.g., 'mak', 'e' -> 'make'
     let res = [];
-    for(let i=0; i<chunks.length; i++) {
-        res.push(chunks[i]);
-    }
-    
-    // Merge tiny last chunks usually (like silent e)
-    // If last chunk is just 'e' and prev chunk ends in consonant
+    for(let i=0; i<chunks.length; i++) { res.push(chunks[i]); }
     if(res.length > 1) {
        const last = res[res.length-1];
-       if(last === 'e' || last === 'es') {
-           res[res.length-2] += res.pop();
-       }
+       if(last === 'e' || last === 'es') { res[res.length-2] += res.pop(); }
     }
-    
     return res.join(' · ');
 }
-
 
 function getAll(store) { return new Promise((r) => { const req = store.getAll(); req.onsuccess = () => r(req.result); }); }
 function addToWrongBank(word) { 
