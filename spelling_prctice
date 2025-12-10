@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<!-- PWA for iPad -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Romeo Spelling">
+<link rel="apple-touch-icon" href="https://img.icons8.com/color/180/lego-head.png"> 
+<title>Romeo's Spelling</title>
+<style>
+  :root {
+    --bg: #f0f4f8; --card: #ffffff; --primary: #007AFF; 
+    --lego-yellow: #FFCF00; --lego-red: #D12E2E; --text: #1d1d1f;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0; padding: 0; 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg); color: var(--text);
+    height: 100vh; display: flex; flex-direction: column;
+    overflow: hidden; /* Prevent body scroll, handle in app */
+  }
+
+  /* --- Layout --- */
+  header {
+    background: rgba(255,255,255,0.95);
+    padding: 15px 20px; padding-top: max(15px, env(safe-area-inset-top));
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 10; backdrop-filter: blur(10px);
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .avatar {
+    width: 44px; height: 44px; background: var(--lego-yellow);
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 24px; color: #333;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  h1 { margin: 0; font-size: 18px; color: #000; letter-spacing: -0.5px; }
+  .subtitle { font-size: 12px; color: #888; font-weight: 500; }
+
+  /* --- Main Container --- */
+  #app {
+    flex: 1; overflow-y: auto; padding: 20px;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+
+  /* --- Components --- */
+  .card {
+    background: var(--card); border-radius: 18px; padding: 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 20px;
+    transition: transform 0.2s;
+  }
+  .btn {
+    display: block; width: 100%; padding: 16px; 
+    border: none; border-radius: 14px;
+    font-size: 17px; font-weight: 600; cursor: pointer;
+    margin-bottom: 12px; transition: opacity 0.2s;
+    text-align: center;
+  }
+  .btn:active { opacity: 0.7; transform: scale(0.98); }
+  .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 10px rgba(0,122,255,0.3); }
+  .btn-yellow { background: var(--lego-yellow); color: #000; }
+  .btn-outline { background: #f2f2f7; color: var(--primary); }
+  .btn-red { background: #ffebeb; color: var(--lego-red); }
+
+  /* --- Practice Mode UI --- */
+  .word-display {
+    text-align: center; margin: 20px 0;
+    min-height: 120px; display: flex; flex-direction: column; justify-content: center;
+  }
+  .word-text { font-size: 56px; font-weight: 800; font-family: "Courier New", monospace; letter-spacing: 2px; }
+  .phonics { font-size: 24px; color: #666; margin-top: 5px; font-weight: 600; }
+  
+  .blanks-container {
+    display: flex; justify-content: center; flex-wrap: wrap; gap: 8px;
+    margin: 30px 0; cursor: text;
+  }
+  .blank-char {
+    width: 45px; height: 55px;
+    border-bottom: 4px solid #ddd;
+    font-size: 36px; font-weight: bold;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent; color: #333;
+    transition: all 0.2s;
+  }
+  .blank-char.active { border-bottom-color: var(--primary); }
+  .blank-char.filled { border-bottom-color: #333; }
+  .blank-char.correct { color: #34C759; border-bottom-color: #34C759; }
+  .blank-char.wrong { color: var(--lego-red); border-bottom-color: var(--lego-red); }
+
+  .feedback-area {
+    text-align: center; height: 40px; font-size: 18px; font-weight: bold; margin-bottom: 10px;
+  }
+  .correct-text { color: #34C759; }
+  .wrong-text { color: var(--lego-red); }
+
+  /* --- List Styles --- */
+  .set-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px; background: #f9f9f9; border-radius: 12px; margin-bottom: 10px;
+  }
+  .set-info strong { display: block; font-size: 16px; margin-bottom: 4px; }
+  .set-info span { font-size: 13px; color: #777; }
+  
+  /* --- Hidden Input for Keyboard --- */
+  #hiddenInput {
+    position: fixed; top: -100px; left: 0; opacity: 0;
+    font-size: 16px; /* prevent zoom */
+  }
+
+  /* --- Overlay for iOS Audio Unlock --- */
+  #startOverlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(255,255,255,0.98); z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  textarea { width: 100%; border: 1px solid #ddd; border-radius: 12px; padding: 12px; font-size: 16px; background: #f9f9f9; }
+</style>
+</head>
+<body>
+
+<!-- Hidden Input for Virtual Keyboard -->
+<input type="text" id="hiddenInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+
+<!-- Header -->
+<header>
+  <div class="brand">
+    <div class="avatar">R</div>
+    <div>
+      <h1>Romeo's Spelling</h1>
+      <div class="subtitle">Phonics Practice</div>
+    </div>
+  </div>
+  <div id="headerBtn"></div>
+</header>
+
+<!-- App Content -->
+<div id="app"></div>
+
+<!-- iOS Audio Unlock Overlay -->
+<div id="startOverlay">
+  <div class="avatar" style="width:80px;height:80px;font-size:40px;margin-bottom:20px">R</div>
+  <h2>准备好了吗？</h2>
+  <p style="color:#666;margin-bottom:30px">点击开始以启用声音</p>
+  <button class="btn btn-primary" style="width:200px" onclick="unlockAudio()">开始练习</button>
+</div>
+
+<script>
+/**
+ * 核心逻辑:
+ * 1. IndexedDB 存储单词集和错题。
+ * 2. 隐藏 Input 代理键盘事件，适配 iPad。
+ * 3. iOS 语音合成兼容处理。
+ */
+
+// --- 1. Global State & DB ---
+let db;
+let currentSetDate = null;
+let practiceList = [];
+let currentIndex = 0;
+let stage = 1; // 1: Visible, 2: Dictation, 3: Retry
+let wrongList = [];
+let voices = [];
+
+// Base64 Simple Chime Sound (Success)
+const chimeSound = new Audio("data:audio/mp3;base64,//uQRAAA8AAANIAAAAQAAAaQAAAAgAAA0gAAABAAABpAAAACD/4QsAASUAAHjaY2AYRYO7/38w/38IwUEA/f/D/T8U/wfjPwZGAQDG/w/2/w/F/8H4j4FRQLD7/wcA9f4P1g=="); 
+// Note: The base64 above is a placeholder dummy. For real use, I'll use a functional beep.
+// Let's use the Web Audio API for a simple generated beep to be 100% offline safe and small.
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playSuccessTone() {
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1);
+  gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.5);
+}
+
+// --- 2. Database Init ---
+const DB_REQ = indexedDB.open('romeo_spelling_v2', 1);
+
+DB_REQ.onupgradeneeded = (e) => {
+  db = e.target.result;
+  if (!db.objectStoreNames.contains('wordSets')) db.createObjectStore('wordSets', { keyPath: 'date' });
+  if (!db.objectStoreNames.contains('wrongBank')) db.createObjectStore('wrongBank', { keyPath: 'word' });
+};
+
+DB_REQ.onsuccess = (e) => {
+  db = e.target.result;
+  console.log("DB Ready");
+};
+
+DB_REQ.onerror = (e) => console.error("DB Error", e);
+
+// --- 3. Navigation & Views ---
+const app = document.getElementById('app');
+const headerBtn = document.getElementById('headerBtn');
+
+function unlockAudio() {
+  // Unlock iOS AudioContext
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  // Trigger speech once to warm up
+  const u = new SpeechSynthesisUtterance('');
+  speechSynthesis.speak(u);
+  
+  document.getElementById('startOverlay').style.display = 'none';
+  renderHome();
+}
+
+function renderHome() {
+  // Load stats
+  const tx = db.transaction(['wordSets', 'wrongBank'], 'readonly');
+  
+  Promise.all([
+    getAll(tx.objectStore('wordSets')),
+    getAll(tx.objectStore('wrongBank'))
+  ]).then(([sets, wrongs]) => {
+    // Sort sets by date desc
+    sets.sort((a,b) => b.date.localeCompare(a.date));
+    
+    let totalWords = 0;
+    sets.forEach(s => totalWords += s.words.length);
+
+    headerBtn.innerHTML = '';
+    
+    let html = `
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+          <div>
+            <div style="font-size:32px;font-weight:800;color:var(--primary)">${totalWords}</div>
+            <div class="subtitle">记忆单词</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:32px;font-weight:800;color:var(--lego-red)">${wrongs.length}</div>
+            <div class="subtitle">错词本</div>
+          </div>
+        </div>
+        <button class="btn btn-yellow" onclick="renderWrongPractice()">🔥 练习错词</button>
+        <button class="btn btn-outline" onclick="renderInput()">✏️ 录入新词</button>
+      </div>
+      
+      <h3 style="margin-left:8px;margin-bottom:12px">练习列表</h3>
+      <div id="setsList">
+        ${sets.map(s => `
+          <div class="set-item" onclick="startPractice('${s.date}')">
+            <div class="set-info">
+              <strong>${s.date}</strong>
+              <span>${s.words.slice(0, 4).join(', ')}${s.words.length>4?'...':''} (${s.words.length}词)</span>
+            </div>
+            <div style="font-size:20px;color:var(--primary)">GO ›</div>
+          </div>
+        `).join('')}
+      </div>
+      <div style="text-align:center;margin-top:20px;color:#999;font-size:12px">
+        Hosted on GitHub Pages • V2.0
+      </div>
+    `;
+    app.innerHTML = html;
+  });
+}
+
+function renderInput() {
+  headerBtn.innerHTML = `<button class="btn-outline" style="padding:6px 12px;border-radius:8px;font-size:14px" onclick="renderHome()">返回</button>`;
+  const today = new Date().toISOString().slice(0, 10);
+  
+  app.innerHTML = `
+    <div class="card">
+      <h3>录入单词</h3>
+      <label class="subtitle">日期</label>
+      <input type="date" id="newDate" value="${today}" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;margin:8px 0 16px;">
+      
+      <label class="subtitle">单词列表 (每行一个)</label>
+      <textarea id="newWords" rows="8" placeholder="apple\nbanana\norange"></textarea>
+      
+      <div style="margin-top:20px">
+        <button class="btn btn-primary" onclick="saveSet()">保存</button>
+        <button class="btn btn-red" onclick="deleteSetByDate()">删除选定日期的词集</button>
+      </div>
+    </div>
+  `;
+}
+
+// --- 4. Logic: Saving Data ---
+function saveSet() {
+  const date = document.getElementById('newDate').value;
+  const text = document.getElementById('newWords').value;
+  if(!text.trim()) return alert("请输入单词");
+  
+  const words = text.split(/\n+/).map(w => w.trim()).filter(w => w);
+  
+  const tx = db.transaction('wordSets', 'readwrite');
+  tx.objectStore('wordSets').put({ date, words });
+  tx.oncomplete = () => {
+    alert("保存成功!");
+    renderHome();
+  };
+}
+
+function deleteSetByDate() {
+  const date = document.getElementById('newDate').value;
+  if(!confirm(`确认删除 ${date} 的所有单词吗？`)) return;
+  
+  const tx = db.transaction('wordSets', 'readwrite');
+  tx.objectStore('wordSets').delete(date);
+  tx.oncomplete = () => {
+    alert("已删除");
+    renderHome();
+  };
+}
+
+// --- 5. Practice Mode ---
+function startPractice(date) {
+  const tx = db.transaction('wordSets', 'readonly');
+  tx.objectStore('wordSets').get(date).onsuccess = (e) => {
+    const data = e.target.result;
+    if(!data) return;
+    
+    currentSetDate = date;
+    practiceList = data.words;
+    currentIndex = 0;
+    stage = 1; // Start with recognition
+    wrongList = [];
+    
+    renderPracticeUI();
+  };
+}
+
+function renderWrongPractice() {
+  const tx = db.transaction('wrongBank', 'readonly');
+  getAll(tx.objectStore('wrongBank')).then(list => {
+    if(list.length === 0) return alert("错题本是空的！真棒！");
+    
+    currentSetDate = 'wrong_bank';
+    practiceList = list.map(i => i.word);
+    currentIndex = 0;
+    stage = 2; // Direct dictation for wrong bank
+    wrongList = [];
+    renderPracticeUI();
+  });
+}
+
+function renderPracticeUI() {
+  headerBtn.innerHTML = `<button class="btn-outline" style="padding:6px 12px;border-radius:8px;font-size:14px" onclick="if(confirm('退出练习？')) renderHome()">退出</button>`;
+  
+  let title = stage === 1 ? "第一轮: 认读 & 拼写" : (stage === 2 ? "第二轮: 听写" : "错题重练");
+  if(currentSetDate === 'wrong_bank') title = "错题突击";
+
+  app.innerHTML = `
+    <div style="text-align:center;margin-bottom:10px;font-weight:bold;color:#666">${title} (${currentIndex + 1}/${practiceList.length})</div>
+    <div class="card" id="practiceCard">
+      <!-- Content injected by loadWord() -->
+    </div>
+  `;
+  
+  loadWord();
+}
+
+function loadWord() {
+  if(currentIndex >= practiceList.length) {
+    handleRoundComplete();
+    return;
+  }
+
+  const word = practiceList[currentIndex];
+  const container = document.getElementById('practiceCard');
+  
+  // Clean word for display logic
+  const cleanWord = word.trim();
+  const phonics = stage === 1 ? getPhonics(cleanWord) : "???";
+  const displayWord = stage === 1 ? cleanWord : "";
+  
+  container.innerHTML = `
+    <div class="word-display">
+      <div class="word-text">${displayWord}</div>
+      <div class="phonics">${phonics}</div>
+    </div>
+    
+    <div style="text-align:center">
+      <button class="btn-outline" style="display:inline-block;width:auto;padding:8px 16px;border-radius:20px" onclick="speak('${cleanWord}')">🔊 发音</button>
+    </div>
+
+    <div class="blanks-container" id="blanksArea">
+      <!-- Blanks generated here -->
+    </div>
+    
+    <div class="feedback-area" id="feedback"></div>
+
+    <button class="btn btn-primary" id="confirmBtn" onclick="checkWord()">确认 (Enter)</button>
+    ${stage === 1 ? `<button class="btn btn-outline" style="margin-top:0" onclick="skipWord()">跳过</button>` : ''}
+  `;
+
+  // Init input handling
+  setupInput(cleanWord);
+  
+  // Auto speak
+  setTimeout(() => speak(cleanWord), 300);
+}
+
+// --- 6. Input & Checking Logic ---
+let targetWord = "";
+let currentInput = "";
+
+function setupInput(word) {
+  targetWord = word;
+  currentInput = "";
+  
+  const blanks = document.getElementById('blanksArea');
+  blanks.innerHTML = '';
+  
+  for(let i=0; i<word.length; i++) {
+    const b = document.createElement('div');
+    b.className = 'blank-char';
+    if(word[i] === ' ' || word[i] === '-') {
+      b.textContent = word[i];
+      b.style.borderBottom = 'none';
+    }
+    blanks.appendChild(b);
+  }
+  
+  const hidden = document.getElementById('hiddenInput');
+  hidden.value = '';
+  hidden.focus(); // Try to focus
+  
+  // If focus failed (due to no user gesture), touching blanks triggers it
+  blanks.onclick = () => {
+    hidden.focus();
+    updateBlanksUI(); // Ensure active state
+  };
+  
+  // Listener
+  hidden.oninput = (e) => {
+    // Filter non-alpha if needed, or allow all
+    // Let's allow standard typing but maybe lowercase
+    let val = e.target.value;
+    // Basic filter: allow letters, hyphens, spaces
+    val = val.slice(0, targetWord.length);
+    currentInput = val;
+    updateBlanksUI();
+  };
+  
+  // Handle Enter key
+  hidden.onkeydown = (e) => {
+    if(e.key === 'Enter') checkWord();
+  };
+  
+  updateBlanksUI();
+}
+
+function updateBlanksUI() {
+  const chars = document.querySelectorAll('.blank-char');
+  const len = targetWord.length;
+  
+  for(let i=0; i<len; i++) {
+    const charElem = chars[i];
+    if(targetWord[i] === ' ' || targetWord[i] === '-') continue;
+    
+    const inputChar = currentInput[i] || '';
+    charElem.textContent = inputChar;
+    
+    // Styling
+    charElem.classList.remove('active', 'filled');
+    if(i === currentInput.length) charElem.classList.add('active'); // Cursor pos
+    if(inputChar) charElem.classList.add('filled');
+  }
+}
+
+function checkWord() {
+  const fb = document.getElementById('feedback');
+  const cleanInput = currentInput.trim().toLowerCase();
+  const cleanTarget = targetWord.trim().toLowerCase();
+  
+  if(!cleanInput) return;
+
+  if(cleanInput === cleanTarget) {
+    // Correct
+    fb.innerHTML = `<span class="correct-text">太棒了！🎉</span>`;
+    document.querySelectorAll('.blank-char').forEach(c => c.classList.add('correct'));
+    playSuccessTone();
+    
+    if(currentSetDate === 'wrong_bank') {
+      removeFromWrongBank(targetWord);
+    }
+    
+    setTimeout(() => {
+      currentIndex++;
+      loadWord();
+    }, 800);
+  } else {
+    // Wrong
+    fb.innerHTML = `<span class="wrong-text">正确拼写: ${targetWord}</span>`;
+    document.querySelectorAll('.blank-char').forEach(c => c.classList.add('wrong'));
+    
+    if(stage !== 3) {
+      if(!wrongList.includes(targetWord)) wrongList.push(targetWord);
+      addToWrongBank(targetWord);
+    }
+    
+    // User must see the error
+    document.getElementById('confirmBtn').innerText = "记住了，继续";
+    document.getElementById('confirmBtn').onclick = () => {
+       currentInput = "";
+       document.getElementById('hiddenInput').value = "";
+       loadWord(); // Reload to clear state or move on? 
+       // Logic: If wrong, we just move on but add to wrong list?
+       // Let's just move next index after acknowledgment
+       currentIndex++;
+       loadWord();
+    };
+  }
+}
+
+function skipWord() {
+  currentIndex++;
+  loadWord();
+}
+
+// --- 7. Round Management ---
+function handleRoundComplete() {
+  if(stage === 1) {
+    // Finish visible round
+    alert("第一轮认读完成！\n接下来是听写模式。");
+    stage = 2;
+    currentIndex = 0;
+    // Shuffle practice list for dictation? Maybe not, keep order.
+    renderPracticeUI();
+  } else if (stage === 2) {
+    // Finish dictation
+    if(wrongList.length > 0) {
+      alert(`完成！有 ${wrongList.length} 个单词需要复习。`);
+      practiceList = [...wrongList];
+      wrongList = [];
+      stage = 3;
+      currentIndex = 0;
+      renderPracticeUI();
+    } else {
+      finishAll();
+    }
+  } else {
+    // Finish Retry
+    finishAll();
+  }
+}
+
+function finishAll() {
+  app.innerHTML = `
+    <div class="card" style="text-align:center;padding:40px">
+      <div style="font-size:60px">🏆</div>
+      <h2>练习完成！</h2>
+      <p>本次练习非常出色！</p>
+      <button class="btn btn-primary" onclick="renderHome()">返回首页</button>
+    </div>
+  `;
+}
+
+// --- 8. Helper Functions ---
+
+// Phonics Splitter (Simple Rule)
+function getPhonics(w) {
+  const matches = w.match(/[^aeiouy]*[aeiouy]+(?:[^aeiouy]*$|[^aeiouy](?=[^aeiouy]))?/gi);
+  return matches ? matches.join(' · ') : w;
+}
+
+// IndexedDB Helper
+function getAll(store) {
+  return new Promise((resolve) => {
+    const r = store.getAll();
+    r.onsuccess = () => resolve(r.result);
+  });
+}
+
+// Wrong Bank Logic
+function addToWrongBank(word) {
+  const tx = db.transaction('wrongBank', 'readwrite');
+  tx.objectStore('wrongBank').put({ 
+    word: word, 
+    lastWrong: new Date().toISOString() 
+  });
+}
+
+function removeFromWrongBank(word) {
+  const tx = db.transaction('wrongBank', 'readwrite');
+  tx.objectStore('wrongBank').delete(word);
+}
+
+// TTS
+function speak(text) {
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-US';
+  u.rate = 0.9;
+  
+  // Select Voice (iOS Daniel or Samantha preferred)
+  const allVoices = speechSynthesis.getVoices();
+  const preferred = allVoices.find(v => v.name === 'Daniel') || 
+                    allVoices.find(v => v.name === 'Samantha') ||
+                    allVoices.find(v => v.lang.includes('en'));
+  if(preferred) u.voice = preferred;
+  
+  speechSynthesis.speak(u);
+}
+
+// Initialize Voices
+speechSynthesis.onvoiceschanged = () => {
+  voices = speechSynthesis.getVoices();
+};
+
+</script>
+</body>
+</html>
