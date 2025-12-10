@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Romeo Spelling">
 <link rel="apple-touch-icon" href="https://img.icons8.com/color/180/lego-head.png">
-<!-- Google Fonts for Art Text -->
+<!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Rounded+Mplus+1c:wght@400;800&display=swap" rel="stylesheet">
@@ -92,7 +92,7 @@
     min-height: 120px; display: flex; flex-direction: column; justify-content: center;
   }
   .word-text { font-size: 52px; font-weight: 800; font-family: "Courier New", monospace; letter-spacing: 2px; }
-  .phonics { font-size: 22px; color: #888; margin-top: 8px; font-weight: 700; background:#f0f0f0; display:inline-block; padding:4px 12px; border-radius:20px; margin: 8px auto 0;}
+  .phonics { font-size: 26px; color: #555; margin-top: 8px; font-weight: 700; background:#e3f2fd; color:#1565c0; display:inline-block; padding:6px 16px; border-radius:20px; margin: 10px auto 0; font-family: "Rounded Mplus 1c", sans-serif;}
   
   .blanks-container {
     display: flex; justify-content: center; flex-wrap: wrap; gap: 8px;
@@ -294,15 +294,19 @@ function renderSetSelection() {
     if(sets.length === 0) {
       html += `<div style="text-align:center;padding:40px;color:#999">暂无练习，快去录入新词吧！</div>`;
     } else {
-      html += sets.map(s => `
-        <div class="set-item" style="display:flex;justify-content:space-between;align-items:center;padding:16px;background:#fff;border-radius:12px;margin-bottom:10px;box-shadow:0 2px 5px rgba(0,0,0,0.02)" onclick="startPractice('${s.date}')">
-          <div class="set-info">
-            <strong style="font-size:17px;color:#333">📅 ${s.date}</strong>
-            <span style="font-size:13px;color:#888">${s.words.slice(0, 5).join(', ')}${s.words.length>5?'...':''}</span>
-          </div>
-          <div style="font-weight:bold;color:var(--primary);background:#eef6ff;padding:6px 12px;border-radius:10px">${s.words.length}词 ›</div>
-        </div>
-      `).join('');
+      html += sets.map(s => {
+          // Display cleaned words in list (remove slashes)
+          const previewWords = s.words.map(w => w.replace(/[\/\-]/g, '')).slice(0,5).join(', ');
+          return `
+            <div class="set-item" style="display:flex;justify-content:space-between;align-items:center;padding:16px;background:#fff;border-radius:12px;margin-bottom:10px;box-shadow:0 2px 5px rgba(0,0,0,0.02)" onclick="startPractice('${s.date}')">
+              <div class="set-info">
+                <strong style="font-size:17px;color:#333">📅 ${s.date}</strong>
+                <span style="font-size:13px;color:#888">${previewWords}${s.words.length>5?'...':''}</span>
+              </div>
+              <div style="font-weight:bold;color:var(--primary);background:#eef6ff;padding:6px 12px;border-radius:10px">${s.words.length}词 ›</div>
+            </div>
+          `;
+      }).join('');
     }
     app.innerHTML = html;
   });
@@ -412,11 +416,14 @@ function renderInput() {
   app.innerHTML = `
     <div class="card">
       <h3 style="margin-top:0">录入新词</h3>
+      <div style="background:#e3f2fd;padding:10px;border-radius:8px;font-size:12px;color:#1565c0;margin-bottom:10px">
+        💡 <b>提示：</b> 如果想指定分音节，请用 "/" 或 "-" 隔开。<br>例如：<code>el/e/phant</code> 或 <code>ba-na-na</code>
+      </div>
       <label class="subtitle">日期</label>
       <input type="date" id="newDate" value="${today}" style="width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:12px;margin:8px 0 16px;background:#fff">
       
       <label class="subtitle">单词列表 (每行一个)</label>
-      <textarea id="newWords" rows="8" placeholder="例如：&#10;apple&#10;banana&#10;happy"></textarea>
+      <textarea id="newWords" rows="8" placeholder="例如：&#10;ap/ple&#10;ba/na/na&#10;hap/py"></textarea>
       
       <div style="margin-top:20px">
         <button class="btn btn-primary" onclick="saveSet()">💾 保存词表</button>
@@ -526,16 +533,30 @@ function renderPracticeUI() {
 
 function loadWord() {
   if(currentIndex >= practiceList.length) { handleRoundComplete(); return; }
-  const word = practiceList[currentIndex];
+  
+  // Raw word might contain / or -
+  const rawWord = practiceList[currentIndex];
+  const cleanWord = rawWord.replace(/[\/\-]/g, ''); // For logic checking
+  
   const container = document.getElementById('practiceCard');
-  const cleanWord = word.trim();
-  const phonics = stage === 1 ? getPhonics(cleanWord) : "";
+  
+  // Phonics Display: If manual / exists, use it. Else calculate.
+  let phonicsDisplay = "";
+  if(stage === 1) {
+      if(rawWord.includes('/') || rawWord.includes('-')) {
+          // Use manual entry but replace separators with dot
+          phonicsDisplay = rawWord.replace(/[\/\-]/g, ' · ');
+      } else {
+          phonicsDisplay = getImprovedPhonics(cleanWord);
+      }
+  }
+
   const displayWord = stage === 1 ? cleanWord : "???";
   
   container.innerHTML = `
     <div class="word-display">
         <div class="word-text" style="color:${stage===1?'#333':'#ccc'}">${displayWord}</div>
-        ${phonics ? `<div class="phonics">${phonics}</div>` : '<div style="height:38px"></div>'}
+        ${phonicsDisplay ? `<div class="phonics">${phonicsDisplay}</div>` : '<div style="height:38px"></div>'}
     </div>
     
     <div style="text-align:center;margin-bottom:20px">
@@ -569,7 +590,12 @@ function setupInput(word) {
   const hidden = document.getElementById('hiddenInput');
   hidden.value = ''; hidden.focus();
   blanks.onclick = () => { hidden.focus(); updateBlanksUI(); };
-  hidden.oninput = (e) => { currentInput = e.target.value.slice(0, targetWord.length); updateBlanksUI(); };
+  hidden.oninput = (e) => { 
+      // Filter non-alpha
+      let val = e.target.value.replace(/[^a-zA-Z]/g, '');
+      currentInput = val.slice(0, targetWord.length); 
+      updateBlanksUI(); 
+  };
   hidden.onkeydown = (e) => { if(e.key === 'Enter') checkWord(); };
   updateBlanksUI();
 }
@@ -603,7 +629,7 @@ function checkWord() {
 
     // Stats Logic: Only count in Stage 2 (Dictation) or Stage 3 (Correction)
     if(stage >= 2) { 
-        sessionMasteredSet.add(targetWord); 
+        sessionMasteredSet.add(cleanTarget); // Use cleaned word for storage
         if(currentSetDate === 'wrong_bank') removeFromWrongBank(targetWord);
     }
 
@@ -635,8 +661,10 @@ function checkWord() {
     } else {
         // Stage 2/3 Error: Add to Wrong List
         if(stage === 2) { 
-            if(!wrongList.includes(targetWord)) wrongList.push(targetWord); 
-            addToWrongBank(targetWord); 
+            // Save raw word (keeping manual dividers if needed in future, but rawWord from list is safer)
+            const rawW = practiceList[currentIndex];
+            if(!wrongList.includes(rawW)) wrongList.push(rawW); 
+            addToWrongBank(rawW); 
         }
         btn.innerText = "记住了，继续 ›";
         btn.className = "btn btn-outline";
@@ -695,7 +723,45 @@ function finishAll() {
 }
 
 // --- Helpers ---
-function getPhonics(w) { const m = w.match(/[^aeiouy]*[aeiouy]+(?:[^aeiouy]*$|[^aeiouy](?=[^aeiouy]))?/gi); return m ? m.join(' · ') : w; }
+
+// Improved Heuristic Phonics
+function getImprovedPhonics(w) {
+    const word = w.toLowerCase();
+    
+    // 1. Silent 'e' at end (makes previous vowel long, usually not a split)
+    // E.g. "cake" -> cake, "late" -> late
+    // But "table" -> ta-ble
+    
+    // Simple heuristic: VCV -> V-CV
+    // VCCV -> VC-CV
+    
+    // We try to split by vowel groups
+    // Regex for basic syllable chunks
+    // This is still an approximation. English is hard.
+    const chunks = word.match(/[^aeiouy]*[aeiouy]+(?:[^aeiouy]*$|[^aeiouy](?=[^aeiouy]))?/gi);
+    
+    if(!chunks || chunks.length <= 1) return word;
+    
+    // Post-process to join silent e or endings
+    // e.g., 'mak', 'e' -> 'make'
+    let res = [];
+    for(let i=0; i<chunks.length; i++) {
+        res.push(chunks[i]);
+    }
+    
+    // Merge tiny last chunks usually (like silent e)
+    // If last chunk is just 'e' and prev chunk ends in consonant
+    if(res.length > 1) {
+       const last = res[res.length-1];
+       if(last === 'e' || last === 'es') {
+           res[res.length-2] += res.pop();
+       }
+    }
+    
+    return res.join(' · ');
+}
+
+
 function getAll(store) { return new Promise((r) => { const req = store.getAll(); req.onsuccess = () => r(req.result); }); }
 function addToWrongBank(word) { 
   const tx = db.transaction('wrongBank', 'readwrite'); 
